@@ -4,7 +4,7 @@ import React from "react";
 import TodayIcon from '@mui/icons-material/Today';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-
+import { useRouter } from 'next/navigation';
 const groupedIngredients = {
  Biryani: [
     { name: "Chicken", unit: "500g" },
@@ -19,6 +19,7 @@ const groupedIngredients = {
   ],
 };
 export default function Dashboard() {
+    const router = useRouter();
   return (
     <div>
       {/* <p className="text-xs text-gray-500">Welcome back</p>
@@ -62,7 +63,7 @@ export default function Dashboard() {
               label="Generate Plan"
               icon={AddIcon}
               className="px-3 mt-3"
-              onClick={() => {}}
+              onClick={() => router.push('/modules/planner')}
             />
           </div>
 
