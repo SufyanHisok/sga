@@ -1,0 +1,58 @@
+/* Calendar background and text */
+.rbc-calendar {
+    background-color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+  }
+  
+  /* Customize navigation buttons (Today, Next, Back) */
+  .rbc-toolbar button {
+    background-color: #007bff !important;
+    color: white !important;
+    border-radius: 5px;
+    padding: 6px 12px;
+    border: none;
+    transition: all 0.3s;
+  }
+  
+  .rbc-toolbar button:hover {
+    background-color: #0056b3 !important;
+  }
+  
+  /* Active View Buttons (Month, Week, Day, Agenda) */
+  .rbc-toolbar button.rbc-active {
+    background-color: #ff9800 !important;
+    color: white !important;
+  }
+  
+  /* Navigation Controls (Month, Week, Day, Agenda) */
+  .rbc-toolbar button:not(.rbc-active) {
+    background-color: #f0f0f0 !important;
+    color: #333 !important;
+  }
+  
+  .rbc-toolbar button:not(.rbc-active):hover {
+    background-color: #ddd !important;
+  }
+  
+  /* Customize event cards */
+  .rbc-event {
+    background-color: oklch(0.54 0.06 158.53) !important;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 14px;
+    color: white !important;
+  }
+  
+  /* Calendar Headers (Days of the Week) */
+  .rbc-header {
+    background-color: #0f0f2d !important;
+    color: white !important;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .rbc-toolbar .rbc-toolbar-label {
+    font-size: 20px;
+  }

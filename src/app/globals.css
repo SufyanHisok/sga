@@ -1,9 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
-@theme {
+
+/* @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+} */
 
 :root {
   --background: #ffffff;
@@ -20,5 +22,17 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.custom-input::placeholder {
+  color: #c7c7c7;
+  font-size: 12px;
+}
+
+.theme-blueBg{
+  background-color: #0f0f2d;
+}
+.theme-blue{
+  color: #0f0f2d;
 }
