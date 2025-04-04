@@ -439,11 +439,11 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                 <table className="w-full mt-3 border-gray-200">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="p-2 text-left">Day</th>
-                      <th className="p-2 text-left">Item</th>
-                      <th className="p-2 text-left">Qty</th>
-                      <th className="p-2 text-left">Total Price</th>
-                      <th className="p-2 text-left">Price Per Month</th>
+                      <th className="p-2 text-left max-sm:text-sm">Day</th>
+                      <th className="p-2 text-left max-sm:text-sm">Item</th>
+                      <th className="p-2 text-left max-sm:text-sm">Qty</th>
+                      <th className="p-2 text-left max-sm:text-sm">Total Price</th>
+                      <th className="p-2 text-left max-sm:text-sm">Price Per Month</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -480,7 +480,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                               <tr className="bg-gray-200">
                                 <td
                                   colSpan={5}
-                                  className="p-3 font-semibold text-lg"
+                                  className="p-3 font-semibold text-lg max-sm:text-sm"
                                 >
                                   {meal.dish || "No Dish Selected"} –{" "}
                                   {meal.mealType}
@@ -493,21 +493,21 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                               {weeklyItems && weeklyItems?.length > 0 && (
                               <>
                                   <tr className="bg-gray-100 text-sm text-gray-700">
-                                    <td colSpan={5} className="p-2 font-medium">
+                                    <td colSpan={5} className="p-2 font-medium max-sm:text-xs">
                                       Items to be delivered every {day}
                                     </td>
                                   </tr>
                                   {weeklyItems.map((item, idx) => (
                                     <tr key={`w-${meal.id}-${idx}`}>
-                                      <td className="p-2"></td>
-                                      <td className="p-2">{item.name}</td>
-                                      <td className="p-2">
+                                      <td className="p-2 max-sm:text-xs"></td>
+                                      <td className="p-2 max-sm:text-xs">{item.name}</td>
+                                      <td className="p-2 max-sm:text-xs">
                                         {item.qty.toFixed(2)} {item.unit}
                                       </td>
-                                      <td className="p-2">
+                                      <td className="p-2 max-sm:text-xs">
                                         Rs. {item.totalPrice.toFixed(2)}
                                       </td>
-                                      <td className="p-2">–</td>
+                                      <td className="p-2 max-sm:text-xs">–</td>
                                     </tr>
                                   ))}
                                 </>
@@ -516,23 +516,23 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                               {monthlyItems?.length > 0 && (
                                 <>
                                   <tr className="bg-gray-100 text-sm text-gray-700">
-                                    <td colSpan={5} className="p-2 font-medium">
+                                    <td colSpan={5} className="p-2 font-medium max-sm:text-xs">
                                       Items to be delivered on 1st {day} of each
                                       month
                                     </td>
                                   </tr>
                                   {monthlyItems.map((item, idx) => (
                                     <tr key={`m-${meal.id}-${idx}`}>
-                                      <td className="p-2"></td>
-                                      <td className="p-2">{item.name}</td>
-                                      <td className="p-2">
+                                      <td className="p-2 max-sm:text-xs"></td>
+                                      <td className="p-2 max-sm:text-xs">{item.name}</td>
+                                      <td className="p-2 max-sm:text-xs">
                                         {(
                                           item.qty * (isRecurring ? 4 : 1)
                                         ).toFixed(2)}{" "}
                                         {item.unit}
                                       </td>
-                                      <td className="p-2">-</td>
-                                      <td className="p-2">
+                                      <td className="p-2 max-sm:text-xs">-</td>
+                                      <td className="p-2 max-sm:text-xs">
                                         Rs.{" "}
                                         {(
                                           item.totalPrice *
@@ -543,11 +543,11 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                                   ))}
                                 </>
                               )}
-                              <tr className="bg-gray-100 font-semibold border-gray-400">
+                              <tr className="bg-gray-100 font-semibold border-gray-400 max-sm:text-sm">
                                 <td colSpan={4} className="p-2 underline">
                                   Total for {meal.dish}
                                 </td>
-                                <td className="p-2 text-lg">
+                                <td className="p-2 text-lg max-sm:text-sm">
                                   Rs. {dishTotal.toFixed(2)}
                                   {/* {monthlyTotal > 0 && (
                                     <div className="text-xs text-emerald-600">
@@ -563,10 +563,10 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
                     {/* Grand total row */}
                     <tr className="font-semibold border-t border-gray-400">
-                      <td colSpan={4} className="p-3 text-lg">
+                      <td colSpan={4} className="p-3 text-lg max-sm:text-base">
                         Estimated Grand Total
                       </td>
-                      <td className="p-3 text-lg">
+                      <td className="p-3 text-lg max-sm:text-base">
                         {(() => {
                           let total = 0;
                           Object.values(groceryData).forEach((meals) => {
