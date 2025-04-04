@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import CustomButton from "@/components/shared/custom-btn";
 import CustomInput from "@/components/shared/custom-Input";
-import { Card } from "@mui/material";
+import { Card, useMediaQuery, useTheme } from "@mui/material";
 import { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import CustomDropdown from "@/components/shared/custom-dropdown";
@@ -13,6 +13,9 @@ import { dishes } from "@/app/data/dishes";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 export default function Planner() {
+
+  const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   type Meal = {
     id: number;
     dish: string;
@@ -268,7 +271,7 @@ export default function Planner() {
   };
 
   return (
-    <div className="p-2">
+    <div className="p-2 ">
       <div className="flex items-center gap-2 rounded-md w-fit">
         {steps.map((label, index) => (
           <div key={index} className="flex items-center">
@@ -304,7 +307,7 @@ export default function Planner() {
           <div className="mt-6">
             <h3 className="text-xl font-semibold">Set Up Your Weekly Meals</h3>
 
-            <div className="grid grid-cols-4 xl:grid-cols-3 lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1">
+            <div className="grid grid-cols-4 xl:grid-cols-3 lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1 max-sm:flex max-sm:flex-col">
             <div className="flex flex-col gap-3 w-100 mt-6">
               <div className="flex flex-col">
                 <p className="text-base text-gray-600">Select your meal plan duration</p>
@@ -337,10 +340,10 @@ export default function Planner() {
             </div>
      
 
-            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 max-sm:w-100">
               {daysOfWeek.map((day) => (
-                <Card key={day} className="mt-6 p-4 w-full">
-                  <div className="text-2xl text-slate-800">{day}</div>
+                <Card key={day} className="mt-6 p-4 w-full" sx={{ width:{xs: "calc(100vw - 12%)", sm: "100%"}}}>
+                  <div className="text-2xl max-sm:text-lg text-slate-800 mb-2">{day}</div>
                   <div className="gap-3 flex flex-col">
                     {weeklyMeals[day].map((meal, index) => (
                       <div key={meal.id} className="flex gap-2 mt-2">
@@ -354,6 +357,7 @@ export default function Planner() {
                         /> */}
 
                         <CustomDropdown
+                          width={isMobile ? "140px" : "160px"}
                           label="Select Dish"
                           options={dishOptions}
                           value={meal.dish}
@@ -364,6 +368,7 @@ export default function Planner() {
 
                         <CustomDropdown
                           label="Meal Type"
+                          width={isMobile ? "125px" : "150px"}
                           options={mealOptions}
                           value={meal.mealType}
                           onChange={(e) =>
@@ -397,7 +402,7 @@ export default function Planner() {
                     ))}
                     <CustomButton
                       label="Add Another Dish"
-                      className="w-50"
+                      className={isMobile ? "w-40" : "w-50"}
                       icon={AddIcon}
                       onClick={() => handleAddMeal(day)}
                     />

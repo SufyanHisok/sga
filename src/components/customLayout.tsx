@@ -274,7 +274,7 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
   );
 
   return (
-    <Box sx={{ display: "flex", overflowX: "hidden" }}>
+    <Box sx={{ display: "flex", overflowX: "hidden", }}>
       <CssBaseline />
 
       {/* Top Navbar */}
@@ -391,7 +391,7 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       {/* Main Content with Smooth Transition */}
-      <MainContent sx={{ paddingTop: "64px" }} open={open}>
+      <MainContent sx={{ paddingTop: "64px" , paddingX:"16px" }} open={open}>
         {children}
       </MainContent>
     </Box>
