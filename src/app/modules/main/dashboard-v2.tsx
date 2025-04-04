@@ -234,7 +234,7 @@ export default function Dashboard() {
               <div className="flex justify-between items-center mb-2">
                 <p className="text-base">Shrimp puttanesca</p>
                 <div className="text-xs rounded-xl px-3 py-1 bg-slate-50 text-gray-700">
-                  400 Kcal
+                  300 Kcal
                 </div>
               </div>
             </div>
