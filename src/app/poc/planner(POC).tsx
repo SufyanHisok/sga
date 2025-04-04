@@ -8,7 +8,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CustomDropdown from "@/components/shared/custom-dropdown";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import React from "react";
-import { Stepper, Step, StepLabel } from "@mui/material";
+// import { Stepper, Step, StepLabel } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import { dishes } from "@/app/data/dishes";
 import Snackbar from "@mui/material/Snackbar";
@@ -119,27 +119,27 @@ export default function Planner() {
     });
   };
 
-  const handleRecurringToggle = (day: string, id: number) => {
-    setWeeklyMeals((prev) => ({
-      ...prev,
-      [day]: prev[day].map((meal) => {
-        if (meal.id !== id) return meal;
+  // const handleRecurringToggle = (day: string, id: number) => {
+  //   setWeeklyMeals((prev) => ({
+  //     ...prev,
+  //     [day]: prev[day].map((meal) => {
+  //       if (meal.id !== id) return meal;
 
-        const updatedRecurring = !meal.isRecurring;
-        const familySize = Number(familyMembers) || 1;
+  //       const updatedRecurring = !meal.isRecurring;
+  //       const familySize = Number(familyMembers) || 1;
 
-        return {
-          ...meal,
-          isRecurring: updatedRecurring,
-          groceries: calculateGroceries(
-            meal.dish,
-            familySize,
-            updatedRecurring
-          ),
-        };
-      }),
-    }));
-  };
+  //       return {
+  //         ...meal,
+  //         isRecurring: updatedRecurring,
+  //         groceries: calculateGroceries(
+  //           meal.dish,
+  //           familySize,
+  //           updatedRecurring
+  //         ),
+  //       };
+  //     }),
+  //   }));
+  // };
 
   const handleDishChange = (day: string, id: number, value: string) => {
     setWeeklyMeals((prev) => ({

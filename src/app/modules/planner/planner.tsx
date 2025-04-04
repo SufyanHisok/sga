@@ -125,27 +125,27 @@ export default function Planner() {
     });
   };
 
-  const handleRecurringToggle = (day: string, id: number) => {
-    setWeeklyMeals((prev) => ({
-      ...prev,
-      [day]: prev[day].map((meal) => {
-        if (meal.id !== id) return meal;
+  // const handleRecurringToggle = (day: string, id: number) => {
+  //   setWeeklyMeals((prev) => ({
+  //     ...prev,
+  //     [day]: prev[day].map((meal) => {
+  //       if (meal.id !== id) return meal;
 
-        const updatedRecurring = !meal.isRecurring;
-        const familySize = Number(familyMembers) || 1;
+  //       const updatedRecurring = !meal.isRecurring;
+  //       const familySize = Number(familyMembers) || 1;
 
-        return {
-          ...meal,
-          isRecurring: updatedRecurring,
-          groceries: calculateGroceries(
-            meal.dish,
-            familySize,
-            updatedRecurring
-          ),
-        };
-      }),
-    }));
-  };
+  //       return {
+  //         ...meal,
+  //         isRecurring: updatedRecurring,
+  //         groceries: calculateGroceries(
+  //           meal.dish,
+  //           familySize,
+  //           updatedRecurring
+  //         ),
+  //       };
+  //     }),
+  //   }));
+  // };
 
   const handleDishChange = (day: string, id: number, value: string) => {
     setWeeklyMeals((prev) => ({
@@ -158,32 +158,32 @@ export default function Planner() {
     }));
   };
 
-  const handleMonthlyStapleToggle = (
-    day: string,
-    mealId: number,
-    itemName: string
-  ) => {
-    setGroceryData((prev) => {
-      const updated = { ...prev };
+  // const handleMonthlyStapleToggle = (
+  //   day: string,
+  //   mealId: number,
+  //   itemName: string
+  // ) => {
+  //   setGroceryData((prev) => {
+  //     const updated = { ...prev };
 
-      updated[day] = updated[day].map((meal) => {
-        if (meal.id !== mealId) return meal;
+  //     updated[day] = updated[day].map((meal) => {
+  //       if (meal.id !== mealId) return meal;
 
-        const updatedGroceries = meal.groceries?.map((item) =>
-          item.name === itemName && item.isMonthlyStaple
-            ? {
-                ...item,
-                monthlyStapleToggle: !item.monthlyStapleToggle,
-              }
-            : item
-        );
+  //       const updatedGroceries = meal.groceries?.map((item) =>
+  //         item.name === itemName && item.isMonthlyStaple
+  //           ? {
+  //               ...item,
+  //               monthlyStapleToggle: !item.monthlyStapleToggle,
+  //             }
+  //           : item
+  //       );
 
-        return { ...meal, groceries: updatedGroceries };
-      });
+  //       return { ...meal, groceries: updatedGroceries };
+  //     });
 
-      return updated;
-    });
-  };
+  //     return updated;
+  //   });
+  // };
 
   const calculateGroceries = (
     dish: string,
@@ -445,7 +445,7 @@ export default function Planner() {
                     {Object.keys(groceryData).flatMap((day) => {
                       return groceryData[day]
                         .filter((meal) => meal.groceries?.length)
-                        .map((meal, index) => {
+                        .map((meal) => {
                           const isRecurring = meal.isRecurring ?? true; // assume true if disabled
 
                           const weeklyItems = meal.groceries?.filter(
