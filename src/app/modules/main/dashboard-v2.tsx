@@ -18,6 +18,12 @@ const groupedIngredients = {
     { name: "Cheese", unit: "50g" },
   ],
 };
+
+const data = Object.entries(groupedIngredients).map(([dish, ingredients]) => ({
+  dish,
+  expectedDelivery: "2PM", // Or use dynamic delivery time if available
+  items: ingredients,
+}));
 export default function Dashboard() {
     const router = useRouter();
   return (
@@ -63,7 +69,7 @@ export default function Dashboard() {
               label="Generate Plan"
               icon={AddIcon}
               className="px-3 mt-3"
-              onClick={() => router.push('/modules/planner')}
+              onClick={() => router.push("/modules/planner")}
             />
           </div>
 
@@ -73,38 +79,68 @@ export default function Dashboard() {
             </h3>
 
             <div className="max-h-80 overflow-y-auto">
-            <table className="w-full border border-gray-200 rounded-lg overflow-hidden text-sm text-left">
-              <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-                <tr>
-                  <th className="p-3">Dish</th>
-                  <th className="p-3 w-1/3">Unit</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-700">
-                {Object.entries(groupedIngredients).map(
-                  ([dish, ingredients]) => (
-                    <React.Fragment key={dish}>
-                      {/* Dish Header Row */}
-                      <tr className="bg-gray-200 font-semibold text-gray-800 ">
-                        <td className="p-3">{ingredients[0].name}</td>
-                        <td colSpan={1}>expected delivery : 2PM</td>
-                      </tr>
-
-                      {/* Ingredient Rows */}
-                      {ingredients.map((ingredient, index) => (
-                        <tr key={index} className="border border-gray-300">
-                          <td className="p-3 ps-6">-{ingredient.name}</td>
-                          <td className="p-3">{ingredient.unit}</td>
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                <table className="w-full border border-gray-200 rounded-lg overflow-hidden text-sm text-left">
+                  <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <tr>
+                      <th className="p-3">Dish</th>
+                      <th className="p-3 w-1/3">Unit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-700">
+                    {data.map((group, index) => (
+                      <React.Fragment key={index}>
+                        <tr className="bg-gray-200 font-semibold text-gray-800">
+                          <td className="p-3">{group.dish}</td>
+                          <td className="p-3">
+                            expected delivery : {group.expectedDelivery}
+                          </td>
                         </tr>
-                      ))}
-                    </React.Fragment>
-                  )
-                )}
-              </tbody>
-            </table>
+                        {group.items.map((item, idx) => (
+                          <tr key={idx} className="border border-gray-300">
+                            <td className="p-3 ps-6">- {item.name}</td>
+                            <td className="p-3">{item.unit}</td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile View */}
+              <div className="block md:hidden space-y-4">
+                {data.map((group, index) => (
+                  <div
+                    key={index}
+                    className="bg-white border border-gray-200 rounded-lg shadow p-4 space-y-2"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-800">
+                        {group.dish}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        expected delivery: {group.expectedDelivery}
+                      </span>
+                    </div>
+                    {group.items.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex justify-between border-t border-gray-300 pt-2 text-sm"
+                      >
+                        <span className="text-gray-700">- {item.name}</span>
+                        <span className="font-medium">{item.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+
             </div>
 
           </div>
+
         </div>
 
         {/* RIGHT SECTION (25%) */}
@@ -130,14 +166,15 @@ export default function Dashboard() {
           <div className="bg-white p-5 rounded-xl shadow space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Yesterday Dishes Delivered</p>
+                <p className="text-sm text-gray-500">
+                  Yesterday Dishes Delivered
+                </p>
               </div>
               <div className="bg-slate-100 text-slate-600 p-3 rounded-full">
                 <TodayIcon />
               </div>
             </div>
             <div className="flex flex-col mt-4 gap-3">
-
               <div className="flex justify-between items-center mb-2">
                 <p className="text-base">Vegetable Paneer Handi</p>
                 <div className="text-sm rounded-xl px-3 py-1 bg-slate-100 text-slate-700 border-slate-300">
@@ -156,7 +193,6 @@ export default function Dashboard() {
                   Dinner
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -171,7 +207,6 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex flex-col mt-4 gap-3">
-
               <div className="flex justify-between items-center mb-2">
                 <p className="text-base">Fried Egg with avocado</p>
                 <div className="text-xs rounded-xl px-3 py-1 bg-slate-50 text-gray-700">
@@ -197,12 +232,8 @@ export default function Dashboard() {
                   400 Kcal
                 </div>
               </div>
-
             </div>
           </div>
-
-       
-        
         </div>
       </div>
     </div>
