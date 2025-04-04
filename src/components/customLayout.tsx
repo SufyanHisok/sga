@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { styled, Theme, CSSObject } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import MuiDrawer from "@mui/material/Drawer";
@@ -32,9 +32,9 @@ import {
   AccountCircle,
   Search,
   EventNote,
-
 } from "@mui/icons-material";
-import PersonIcon from '@mui/icons-material/Person';
+import CircularProgress from "@mui/material/CircularProgress";
+import PersonIcon from "@mui/icons-material/Person";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -76,7 +76,7 @@ const AppBar = styled(MuiAppBar, {
     duration: theme.transitions.duration.leavingScreen,
   }),
   [theme.breakpoints.up("sm")]: {
-    width: `calc(100% - 65px)`, 
+    width: `calc(100% - 65px)`,
     ...(open && {
       marginLeft: drawerWidth,
       width: `calc(100% - ${drawerWidth}px)`,
@@ -116,7 +116,21 @@ const MainContent = styled(Box, {
 
 const CustomLayout = ({ children }: { children: React.ReactNode }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [mounted, setMounted] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
+
+  useEffect(() => {
+    setMounted(true); // hydration done
+    const timer = setTimeout(() => {
+      setShowLoader(false); // hide loader after 3 sec
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const rawisMobile = useMediaQuery(theme.breakpoints.down("sm"), {
+    noSsr: true,
+  });
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [open, setOpen] = useState(true);
@@ -133,113 +147,131 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const handleDrawerToggle = () => {
-  setMobileOpen(!mobileOpen);
-};
+    setMobileOpen(!mobileOpen);
+  };
 
-  const drawerContent  = (
+  if (!mounted || showLoader) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          height: "100vh",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff",
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        {mounted && (
+          <>
+            <div>
+              <span className="text-black me-1 text-2xl sm:text-4xl">Smart</span>
+              <span className="text-green-500 text-2xl sm:text-4xl me-2">Grocery</span>
+            </div>
+            <CircularProgress size={30} sx={{ color: "#0f0f2d" }} />
+          </>
+        )}
+      </Box>
+    );
+  }
+
+  const isMobile = mounted ? rawisMobile : false;
+
+  const drawerContent = (
     <>
-    <Box
-          sx={{
-            backgroundColor: "#0f0f2d",
-            display: "flex",
-            justifyContent: "space-between",
-            height: 150,
-            alignItems: "center",
-            gap: open ? "16px" : "8px",
-            padding: open ? "8px" : "4px",
-          }}
-        >
-          <Box>
-            <Typography className="text-white" variant="h6">
-              {open ? (
-                <>
-                  <span className="text-white me-0.5">Smart</span>
-                  <span className="text-green-500">Grocery</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-white">S</span>
-                  <span className="text-green-500">G</span>
-                </>
-              )}
-            </Typography>
-
-            {open && (
-              <div className="text-gray-300 text-sm">
-                Eat Healthy live healthy
-              </div>
+      <Box
+        sx={{
+          backgroundColor: "#0f0f2d",
+          display: "flex",
+          justifyContent: "space-between",
+          height: 150,
+          alignItems: "center",
+          gap: open ? "16px" : "8px",
+          padding: open ? "8px" : "4px",
+        }}
+      >
+        <Box>
+          <Typography className="text-white" variant="h6">
+            {open ? (
+              <>
+                <span className="text-white me-0.5">Smart</span>
+                <span className="text-green-500">Grocery</span>
+              </>
+            ) : (
+              <>
+                <span className="text-white">S</span>
+                <span className="text-green-500">G</span>
+              </>
             )}
-          </Box>
+          </Typography>
 
-            {!isMobile && (
-                   <IconButton
-                   className="!text-white"
-                   color="inherit"
-                   onClick={() => setOpen(!open)}
-                   edge="start"
-                 >
-                   {open ? <ChevronLeft /> : <ChevronRight />}
-                 </IconButton>
-            )}
-     
+          {open && (
+            <div className="text-gray-300 text-sm">
+              Eat Healthy live healthy
+            </div>
+          )}
         </Box>
 
-        <Divider />
+        {!isMobile && (
+          <IconButton
+            className="!text-white"
+            color="inherit"
+            onClick={() => setOpen(!open)}
+            edge="start"
+          >
+            {open ? <ChevronLeft /> : <ChevronRight />}
+          </IconButton>
+        )}
+      </Box>
 
-        <Box sx={{ marginTop: 2 }}>
-          <div className="text-sm text-gray-400 px-6">
-            {open ? "Menu" : "M"}
-          </div>
-          {/* Navigation List */}
-          <List>
-            {[
-              { text: "Dashboard", icon: <Home />, link: "/modules/main" },
-              {
-                text: "Planner",
-                icon: <EventNote />,
-                link: "/modules/planner",
-              },
-              { text: "Orders", icon: <Person />, link: "/modules/order" },
-              // { text: "Invoices", icon: <Person />, link: "/clients" },
-              { text: "Settings", icon: <Settings />, link: "/settings" },
-            ].map((item) => (
-              <ListItem
-                key={item.text}
-                disablePadding
-                sx={{ display: "block" }}
-              >
-                <Link href={item.link} passHref>
-                  <ListItemButton
-                   onClick={() => {
+      <Divider />
+
+      <Box sx={{ marginTop: 2 }}>
+        <div className="text-sm text-gray-400 px-6">{open ? "Menu" : "M"}</div>
+        {/* Navigation List */}
+        <List>
+          {[
+            { text: "Dashboard", icon: <Home />, link: "/modules/main" },
+            {
+              text: "Planner",
+              icon: <EventNote />,
+              link: "/modules/planner",
+            },
+            { text: "Orders", icon: <Person />, link: "/modules/order" },
+            // { text: "Invoices", icon: <Person />, link: "/clients" },
+            { text: "Settings", icon: <Settings />, link: "/settings" },
+          ].map((item) => (
+            <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
+              <Link href={item.link} passHref>
+                <ListItemButton
+                  onClick={() => {
                     if (isMobile) setMobileOpen(false);
-                    }}
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
-                      bgcolor:
-                        pathname === item.link
-                          ? "rgba(255, 255, 255, 0.1)"
-                          : "inherit",
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{ minWidth: 0, justifyContent: "center" }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.text}
-                      sx={{ opacity: open ? 1 : 0, ml: open ? 2 : 0 }}
-                    />
-                  </ListItemButton>
-                </Link>
-              </ListItem>
-            ))}
-          </List>
-        </Box>
+                  }}
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                    bgcolor:
+                      pathname === item.link
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "inherit",
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 0, justifyContent: "center" }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: open ? 1 : 0, ml: open ? 2 : 0 }}
+                  />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
     </>
-  )
+  );
 
   return (
     <Box sx={{ display: "flex", overflowX: "hidden" }}>
@@ -259,11 +291,7 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           {isMobile && (
-            <Button
-              aria-label="open drawer"
-              onClick={handleDrawerToggle}
-              
-            >
+            <Button aria-label="open drawer" onClick={handleDrawerToggle}>
               <MenuIcon className="text-black" />
             </Button>
           )}
@@ -298,44 +326,39 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
               },
             }}
           />
-      
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>  
 
-                {isMobile ? (
-                    <IconButton                
-                    onClick={handleMenuOpen}
-                    >
-                      <div className="p-3 text-black rounded-full w-10 h-10 flex items-center justify-center bg-gray-200" >
-                      <PersonIcon />
-                      </div>
-                    </IconButton>
-                ) : (
-                  <Button
-                  onClick={handleMenuOpen}
-                  variant="text"
-                  sx={{ textTransform: "none", color: "#000", fontSize: 16 }}
-                  endIcon={<AccountCircle />}
-                >
-                  Sufyan Ahmed
-                </Button>
-                ) }
-            
-  
-              {/* Dropdown Menu */}
-              <Menu
-                disableScrollLock
-                anchorEl={anchorEl}
-                open={openMenu}
-                onClose={handleMenuClose}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                transformOrigin={{ vertical: "top", horizontal: "right" }}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {isMobile ? (
+              <IconButton onClick={handleMenuOpen}>
+                <div className="p-3 text-black rounded-full w-10 h-10 flex items-center justify-center bg-gray-200">
+                  <PersonIcon />
+                </div>
+              </IconButton>
+            ) : (
+              <Button
+                onClick={handleMenuOpen}
+                variant="text"
+                sx={{ textTransform: "none", color: "#000", fontSize: 16 }}
+                endIcon={<AccountCircle />}
               >
-                <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-                <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
-                <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
-              </Menu>
-            </Box>
-     
+                Sufyan Ahmed
+              </Button>
+            )}
+
+            {/* Dropdown Menu */}
+            <Menu
+              disableScrollLock
+              anchorEl={anchorEl}
+              open={openMenu}
+              onClose={handleMenuClose}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+              <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
+              <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+            </Menu>
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -354,9 +377,8 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
             display: { xs: "block", sm: "none" },
             "& .MuiDrawer-paper": {
               width: drawerWidth,
-              
+
               zIndex: (theme) => theme.zIndex.appBar + 10,
-         
             },
           }}
         >
