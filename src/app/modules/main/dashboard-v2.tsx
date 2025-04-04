@@ -5,6 +5,7 @@ import TodayIcon from '@mui/icons-material/Today';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useRouter } from 'next/navigation';
+import { useMediaQuery, useTheme } from "@mui/material";
 const groupedIngredients = {
  Biryani: [
     { name: "Chicken", unit: "500g" },
@@ -19,12 +20,16 @@ const groupedIngredients = {
   ],
 };
 
+
+
 const data = Object.entries(groupedIngredients).map(([dish, ingredients]) => ({
   dish,
   expectedDelivery: "2PM", // Or use dynamic delivery time if available
   items: ingredients,
 }));
 export default function Dashboard() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const router = useRouter();
   return (
     <div>
@@ -68,7 +73,7 @@ export default function Dashboard() {
             <CustomButton
               label="Generate Plan"
               icon={AddIcon}
-              className="px-3 mt-3"
+              className="px-3 mt-3 max-sm:w-full max-sm:flex max-sm:justify-center"
               onClick={() => router.push("/modules/planner")}
             />
           </div>
@@ -152,8 +157,8 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-500">Weekly Spent</p>
                 <p className="text-xl font-bold mt-1">88$ USD</p>
               </div>
-              <div className="bg-blue-100 text-blue-500 p-3 rounded-full">
-                <AttachMoneyIcon />
+              <div className="bg-blue-100 text-blue-500 p-3 max-sm:w-10 max-sm:h-10 max-sm:flex rounded-full">
+                <AttachMoneyIcon style={{ fontSize: isMobile ? "16px" : undefined }} />
               </div>
             </div>
             <div className="flex items-center text-sm text-red-500 gap-1">
@@ -170,8 +175,8 @@ export default function Dashboard() {
                   Yesterday Dishes Delivered
                 </p>
               </div>
-              <div className="bg-slate-100 text-slate-600 p-3 rounded-full">
-                <TodayIcon />
+              <div className="bg-slate-100 text-slate-600 p-3 rounded-full max-sm:w-10 max-sm:h-10 max-sm:flex">
+                <TodayIcon style={{ fontSize: isMobile ? "16px" : undefined }} />
               </div>
             </div>
             <div className="flex flex-col mt-4 gap-3">
@@ -202,8 +207,8 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm text-gray-500">Our Recommendation</p>
               </div>
-              <div className="bg-slate-100 text-slate-600 p-3 rounded-full">
-                <AutoAwesomeIcon />
+              <div className="bg-slate-100 text-slate-600 p-3 rounded-full max-sm:w-10 max-sm:h-10 max-sm:flex">
+                <AutoAwesomeIcon style={{ fontSize: isMobile ? "14px" : undefined }} />
               </div>
             </div>
             <div className="flex flex-col mt-4 gap-3">
