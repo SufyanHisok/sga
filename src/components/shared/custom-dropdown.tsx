@@ -7,10 +7,11 @@ interface CustomDropdownProps {
   label?: string;
   options: { label: string; value: string | number }[]; // List of options
   value: string | number; // Selected value
+  width?: string
   onChange: (value: string | number) => void; // Function to update value
 }
 
-const CustomDropdown: React.FC<CustomDropdownProps> = ({ label, options, value, onChange }) => {
+const CustomDropdown: React.FC<CustomDropdownProps> = ({ label, options, value, onChange, width }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -28,16 +29,17 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ label, options, value, 
   return (
     <div className="relative inline-block">
       <Button
-        style={{ borderRadius: "8px", border: "1px solid #d1d5dc", color: "rgba(0, 0, 0, 0.87)", fontWeight: 400 }}
+        style={{ borderRadius: "8px", border: "1px solid #d1d5dc", color: "rgba(0, 0, 0, 0.87)", fontWeight: 400, width: width }}
         variant="outlined"
         endIcon={<ArrowDropDownIcon />}
         onClick={handleClick}
-        className="w-full text-left"
+        className="text-left"
       >
         {options.find((opt) => opt.value === value)?.label || label || "Select"}
       </Button>
 
-      <Menu anchorEl={anchorEl} open={open} onClose={() => handleClose()}>
+      <Menu anchorEl={anchorEl} open={open} onClose={() => handleClose()} disablePortal disableScrollLock
+      >
         {options.map((option) => (
           <MenuItem key={option.value} onClick={() => handleClose(option.value)}>
             {option.label}

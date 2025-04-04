@@ -8,7 +8,8 @@ import AddIcon from "@mui/icons-material/Add";
 import CustomDropdown from "@/components/shared/custom-dropdown";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import React from "react";
-
+import { Stepper, Step, StepLabel } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
 import { dishes } from "@/app/data/dishes";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -62,13 +63,6 @@ export default function Planner() {
     "Saturday",
     "Sunday",
   ];
-
-  const planDuration = [
-    { label: "Current month", value: "1" },
-    { label: "Next 2 months", value: "2" },
-    { label: "Next 3 months", value: "3" },
-  ]
-  const [selectedDuration, setSelectedDuration] = useState("1");
 
   const mealOptions = [
     { label: "Breakfast", value: "breakfast" },
@@ -303,27 +297,10 @@ export default function Planner() {
         <>
           <div className="mt-6">
             <h3 className="text-xl font-semibold">Set Up Your Weekly Meals</h3>
-
-            <div className="grid grid-cols-4 xl:grid-cols-3 lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1">
             <div className="flex flex-col gap-3 w-100 mt-6">
               <div className="flex flex-col">
-                <p className="text-base text-gray-600">Select your meal plan duration</p>
-                <p className="text-xs text-gray-400">
-                  the timeframe over which you want to plan your meals
-                </p>
-              </div>
-              <CustomDropdown 
-              label="Select your meal plan duration"
-              options={planDuration}
-              value={selectedDuration} 
-              onChange={(e) => setSelectedDuration(String(e))}
-              />
-            </div>
-
-            <div className="flex flex-col gap-3 w-100 mt-6">
-              <div className="flex flex-col">
-                <p className="text-base text-gray-600">Family Members</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-base text-gray-500">Family Members</p>
+                <p className="text-xs text-gray-300">
                   The number of people you are planning meals for
                 </p>
               </div>
@@ -334,10 +311,8 @@ export default function Planner() {
                 onChange={(e) => handleFamilySizeChange(e.target.value)}
               />
             </div>
-            </div>
-     
 
-            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
               {daysOfWeek.map((day) => (
                 <Card key={day} className="mt-6 p-4 w-full">
                   <div className="text-2xl text-slate-800">{day}</div>
@@ -426,10 +401,8 @@ export default function Planner() {
                 <h2 className="text-xl font-semibold">
                   Grocery Plan{" "}
                   <span className="text-gray-500 text-sm italic">
-                    for {familyMembers || 1} serving&apos;s
+                    for {(familyMembers) || 1} serving&apos;s
                   </span>
-                  <span className="text-base ml-2 text-gray-600"> ({planDuration.find(res => res.value === selectedDuration)?.label})</span>
-                  
                 </h2>
                 <table className="w-full mt-3 border-gray-200">
                   <thead>
@@ -442,146 +415,163 @@ export default function Planner() {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.keys(groceryData).flatMap((day) => {
-                      return groceryData[day]
-                        .filter((meal) => meal.groceries?.length)
-                        .map((meal, index) => {
-                          const isRecurring = meal.isRecurring ?? true; // assume true if disabled
-
-                          const weeklyItems = meal.groceries?.filter(
-                            (i) => !i.isMonthlyStaple || !i.monthlyStapleToggle
-                          );
-                          const monthlyItems =
-                            meal.groceries?.filter(
-                              (i) => i.isMonthlyStaple && i.monthlyStapleToggle
-                            ) || [];
-
-                          const weeklyTotal =
-                            weeklyItems?.reduce(
-                              (sum, item) => sum + item.totalPrice,
-                              0
-                            ) || 0;
-                          const monthlyTotal =
-                            monthlyItems?.reduce(
-                              (sum, item) =>
-                                sum + item.totalPrice * (isRecurring ? 4 : 1),
-                              0
-                            ) || 0;
-
-                          const dishTotal = weeklyTotal + monthlyTotal;
-
-                          return (
+                    {Object.keys(groceryData).map((day) => {
+                      const mealsForDay = groceryData[day].filter(
+                        (meal) => meal.groceries?.length
+                      );
+                      const dayTotal = mealsForDay.reduce(
+                        (acc, meal) =>
+                          acc +
+                          (meal.groceries?.reduce(
+                            (sum, item) => sum + item.totalPrice,
+                            0
+                          ) || 0),
+                        0
+                      );
+                      return mealsForDay.length > 0 ? (
+                        <React.Fragment key={day}>
+                          <tr className="bg-gray-200">
+                            <td
+                              colSpan={5}
+                              className="p-3 text-lg font-semibold"
+                            >
+                              {day}
+                            </td>
+                          </tr>
+                          {mealsForDay.map((meal) => (
                             <React.Fragment key={`${day}-${meal.id}`}>
-                              <tr className="bg-gray-200">
-                                <td
-                                  colSpan={5}
-                                  className="p-3 font-semibold text-lg"
+                              <tr className="bg-gray-100">
+                                <td colSpan={5} className="p-2 font-medium">
+                                  {meal.dish || "No Dish Selected"}
+                                  {meal.isRecurring && (
+                                    <span className="px-3 ml-2 text-sm rounded-xl border-emerald-200 border-1 bg-emerald-50 text-emerald-600">
+                                      Every week
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                              {meal.groceries?.map((item, index) => (
+                                <tr
+                                  key={`${day}-${meal.id}-${index}`}
+                                  className=""
                                 >
-                                  {meal.dish || "No Dish Selected"} –{" "}
-                                  {meal.mealType}
-                                  <span className="px-3 ml-2 text-sm rounded-xl border-emerald-200 border-1 bg-emerald-50 text-emerald-600">
-                                    {day}
-                                  </span>
-                                </td>
-                              </tr>
-
-                              {weeklyItems && weeklyItems?.length > 0 && (
-                              <>
-                                  <tr className="bg-gray-100 text-sm text-gray-700">
-                                    <td colSpan={5} className="p-2 font-medium">
-                                      Items to be delivered every {day}
-                                    </td>
-                                  </tr>
-                                  {weeklyItems.map((item, idx) => (
-                                    <tr key={`w-${meal.id}-${idx}`}>
-                                      <td className="p-2"></td>
-                                      <td className="p-2">{item.name}</td>
-                                      <td className="p-2">
-                                        {item.qty.toFixed(2)} {item.unit}
-                                      </td>
-                                      <td className="p-2">
-                                        Rs. {item.totalPrice.toFixed(2)}
-                                      </td>
-                                      <td className="p-2">–</td>
-                                    </tr>
-                                  ))}
-                                </>
-                              )}
-
-                              {monthlyItems?.length > 0 && (
-                                <>
-                                  <tr className="bg-gray-100 text-sm text-gray-700">
-                                    <td colSpan={5} className="p-2 font-medium">
-                                      Items to be delivered on 1st {day} of each
-                                      month
-                                    </td>
-                                  </tr>
-                                  {monthlyItems.map((item, idx) => (
-                                    <tr key={`m-${meal.id}-${idx}`}>
-                                      <td className="p-2"></td>
-                                      <td className="p-2">{item.name}</td>
-                                      <td className="p-2">
-                                        {(
-                                          item.qty * (isRecurring ? 4 : 1)
-                                        ).toFixed(2)}{" "}
-                                        {item.unit}
-                                      </td>
-                                      <td className="p-2">-</td>
-                                      <td className="p-2">
-                                        Rs.{" "}
-                                        {(
-                                          item.totalPrice *
-                                          (isRecurring ? 4 : 1)
-                                        ).toFixed(2)}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </>
-                              )}
-                              <tr className="bg-gray-100 font-semibold border-gray-400">
-                                <td colSpan={4} className="p-2 underline">
-                                  Total for {meal.dish}
-                                </td>
-                                <td className="p-2 text-lg">
-                                  Rs. {dishTotal.toFixed(2)}
-                                  {/* {monthlyTotal > 0 && (
-                                    <div className="text-xs text-emerald-600">
-                                      + Monthly: Rs. {monthlyTotal.toFixed(2)}
-                                    </div>
-                                  )} */}
-                                </td>
-                              </tr>
+                                  <td className="p-2"></td>
+                                  <td className="p-2">{item.name}</td>
+                                  <td className="p-2">
+                                    {" "}
+                                    {item.qty.toFixed(2)} {item.unit}{" "}
+                                  </td>
+                                  <td className="p-2">
+                                    Rs. {item.totalPrice}{" "}
+                                    {meal.isRecurring &&
+                                      item.isMonthlyStaple && (
+                                        <button
+                                          className={`px-2 py-1 rounded-full text-xs border transition ${
+                                            item.monthlyStapleToggle
+                                              ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+                                              : "bg-gray-100 text-gray-400 border-gray-300"
+                                          }`}
+                                          onClick={() =>
+                                            handleMonthlyStapleToggle(
+                                              day,
+                                              meal.id,
+                                              item.name
+                                            )
+                                          }
+                                        >
+                                          {item.monthlyStapleToggle && (
+                                            <CheckIcon sx={{ fontSize: 16 }} />
+                                          )}{" "}
+                                          Monthly Staple
+                                        </button>
+                                      )}
+                                  </td>
+                                  <td className="p-2">
+                                    {meal.isRecurring &&
+                                      item.isMonthlyStaple &&
+                                      item.monthlyStapleToggle && (
+                                        <span>
+                                          {(item.totalPrice * 4).toFixed(2)}
+                                        </span>
+                                      )}
+                                  </td>
+                                </tr>
+                              ))}
                             </React.Fragment>
-                          );
-                        });
+                          ))}
+                          <tr className="bg-gray-200 font-semibold">
+                            <td colSpan={4} className="p-2">
+                              Total for {day}
+                            </td>
+                            <td className="p-2">
+                              Rs. {dayTotal.toFixed(2)}
+                              <div className="text-xs text-emerald-600">
+                                + Monthly: Rs.{" "}
+                                {mealsForDay
+                                  .reduce(
+                                    (sum, meal) =>
+                                      sum +
+                                      (meal.groceries?.reduce(
+                                        (acc, item) =>
+                                          acc +
+                                          (meal.isRecurring &&
+                                          item.isMonthlyStaple &&
+                                          item.monthlyStapleToggle
+                                            ? item.totalPrice * 4
+                                            : 0),
+                                        0
+                                      ) || 0),
+                                    0
+                                  )
+                                  .toFixed(2)}
+                              </div>
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      ) : null;
                     })}
-
-                    {/* Grand total row */}
-                    <tr className="font-semibold border-t border-gray-400">
-                      <td colSpan={4} className="p-3 text-lg">
-                        Estimated Grand Total
+                    <tr className="0 font-semibold">
+                      <td
+                        colSpan={4}
+                        className="p-3 border-t border-gray-400  text-lg"
+                      >
+                        Grand Total
                       </td>
-                      <td className="p-3 text-lg">
+                      <td className="p-3 text-lg border-t border-gray-400 ">
                         {(() => {
-                          let total = 0;
-                          Object.values(groceryData).forEach((meals) => {
-                            meals.forEach((meal) => {
-                              if (!meal.groceries) return;
-                              const isRecurring = meal.isRecurring ?? true;
-                              meal.groceries.forEach((item) => {
-                                if (
-                                  item.isMonthlyStaple &&
-                                  item.monthlyStapleToggle
-                                ) {
-                                  total +=
-                                    item.totalPrice * (isRecurring ? 4 : 1);
-                                } else {
-                                  total += item.totalPrice;
-                                }
-                              });
+                          let normalTotal = 0;
+                          let monthlyTotal = 0;
+
+                          Object.keys(groceryData).forEach((day) => {
+                            groceryData[day].forEach((meal) => {
+                              if (meal.groceries?.length) {
+                                meal.groceries.forEach((item) => {
+                                  normalTotal += item.totalPrice;
+                                  if (
+                                    meal.isRecurring &&
+                                    item.isMonthlyStaple &&
+                                    item.monthlyStapleToggle
+                                  ) {
+                                    monthlyTotal += item.totalPrice * 4;
+                                  }
+                                });
+                              }
                             });
                           });
-                          return `Rs. ${total.toFixed(2)}`;
+
+                          const grandTotal = normalTotal + monthlyTotal;
+
+                          return (
+                            <>
+                              Rs. {grandTotal.toFixed(2)}
+                              {monthlyTotal > 0 && (
+                                <div className="text-sm text-emerald-700 font-normal">
+                                  + Monthly: Rs. {monthlyTotal.toFixed(2)}{" "}
+                                  included!
+                                </div>
+                              )}
+                            </>
+                          );
                         })()}
                       </td>
                     </tr>

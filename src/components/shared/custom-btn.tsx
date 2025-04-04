@@ -13,7 +13,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({ className, label,  onClick,
   return (
     <button 
       onClick={onClick} 
-      className={`flex border-1 border-solid rounded-xl p-1 border-gray-200 text-sm items-center gap-2 
+      className={`flex border-1 border-solid rounded-xl p-1 border-gray-200 items-center gap-2 
         hover:bg-gray-100 hover:border-gray-300
         transition-all duration-300 cursor-pointer
         ${className}`}

@@ -20,6 +20,8 @@ import {
   MenuItem,
   InputAdornment,
   Typography,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
   ChevronLeft,
@@ -30,9 +32,12 @@ import {
   AccountCircle,
   Search,
   EventNote,
+
 } from "@mui/icons-material";
+import PersonIcon from '@mui/icons-material/Person';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import MenuIcon from "@mui/icons-material/Menu";
 
 const drawerWidth = 240;
 
@@ -64,20 +69,23 @@ interface AppBarProps extends MuiAppBarProps {
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
-  width: `calc(100% - 65px)`,
+  width: "100%", // ✅ default for mobile
   zIndex: theme.zIndex.drawer + 1,
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
+  [theme.breakpoints.up("sm")]: {
+    width: `calc(100% - 65px)`, 
+    ...(open && {
+      marginLeft: drawerWidth,
+      width: `calc(100% - ${drawerWidth}px)`,
+      transition: theme.transitions.create(["width", "margin"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
     }),
-  }),
+  },
 }));
 
 const Drawer = styled(MuiDrawer, {
@@ -107,6 +115,10 @@ const MainContent = styled(Box, {
 }));
 
 const CustomLayout = ({ children }: { children: React.ReactNode }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [open, setOpen] = useState(true);
   const pathname = usePathname();
 
@@ -120,17 +132,142 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
     setAnchorEl(null);
   };
 
+  const handleDrawerToggle = () => {
+  setMobileOpen(!mobileOpen);
+};
+
+  const drawerContent  = (
+    <>
+    <Box
+          sx={{
+            backgroundColor: "#0f0f2d",
+            display: "flex",
+            justifyContent: "space-between",
+            height: 150,
+            alignItems: "center",
+            gap: open ? "16px" : "8px",
+            padding: open ? "8px" : "4px",
+          }}
+        >
+          <Box>
+            <Typography className="text-white" variant="h6">
+              {open ? (
+                <>
+                  <span className="text-white me-0.5">Smart</span>
+                  <span className="text-green-500">Grocery</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-white">S</span>
+                  <span className="text-green-500">G</span>
+                </>
+              )}
+            </Typography>
+
+            {open && (
+              <div className="text-gray-300 text-sm">
+                Eat Healthy live healthy
+              </div>
+            )}
+          </Box>
+
+            {!isMobile && (
+                   <IconButton
+                   className="!text-white"
+                   color="inherit"
+                   onClick={() => setOpen(!open)}
+                   edge="start"
+                 >
+                   {open ? <ChevronLeft /> : <ChevronRight />}
+                 </IconButton>
+            )}
+     
+        </Box>
+
+        <Divider />
+
+        <Box sx={{ marginTop: 2 }}>
+          <div className="text-sm text-gray-400 px-6">
+            {open ? "Menu" : "M"}
+          </div>
+          {/* Navigation List */}
+          <List>
+            {[
+              { text: "Dashboard", icon: <Home />, link: "/modules/main" },
+              {
+                text: "Planner",
+                icon: <EventNote />,
+                link: "/modules/planner",
+              },
+              { text: "Orders", icon: <Person />, link: "/modules/order" },
+              // { text: "Invoices", icon: <Person />, link: "/clients" },
+              { text: "Settings", icon: <Settings />, link: "/settings" },
+            ].map((item) => (
+              <ListItem
+                key={item.text}
+                disablePadding
+                sx={{ display: "block" }}
+              >
+                <Link href={item.link} passHref>
+                  <ListItemButton
+                   onClick={() => {
+                    if (isMobile) setMobileOpen(false);
+                    }}
+                    sx={{
+                      minHeight: 48,
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
+                      bgcolor:
+                        pathname === item.link
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "inherit",
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{ minWidth: 0, justifyContent: "center" }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.text}
+                      sx={{ opacity: open ? 1 : 0, ml: open ? 2 : 0 }}
+                    />
+                  </ListItemButton>
+                </Link>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+    </>
+  )
+
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", overflowX: "hidden" }}>
       <CssBaseline />
 
       {/* Top Navbar */}
       <AppBar
-        sx={{ background: "#fff", boxShadow: "none" }}
+        sx={{
+          overflowX: "clip",
+          background: "#fff",
+          boxShadow: "none",
+          boxSizing: "border-box",
+          zIndex: (theme) => theme.zIndex.drawer + 0,
+        }}
         position="fixed"
         open={open}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          {isMobile && (
+            <Button
+              aria-label="open drawer"
+              onClick={handleDrawerToggle}
+              
+            >
+              <MenuIcon className="text-black" />
+            </Button>
+          )}
+
           <TextField
             variant="outlined"
             size="small"
@@ -138,7 +275,7 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
             sx={{
               backgroundColor: "#f5f5f5",
               borderRadius: 1,
-              width: "250px",
+              width: { xs: "200px", sm: "250px" },
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
                   borderColor: "transparent",
@@ -154,131 +291,85 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
             slotProps={{
               input: {
                 endAdornment: (
-                    <InputAdornment position="end">
-                      <Search sx={{ color: "#666" }} /> {/* 🔥 Search Icon */}
-                    </InputAdornment>
-                  ),
-              } 
-              }}
+                  <InputAdornment position="end">
+                    <Search sx={{ color: "#666" }} /> {/* 🔥 Search Icon */}
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Button
-              onClick={handleMenuOpen}
-              variant="text"
-              sx={{ textTransform: "none", color: "#000", fontSize: 16 }}
-              endIcon={<AccountCircle />}
-            >
-              Sufyan Ahmed
-            </Button>
+      
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>  
 
-            {/* Dropdown Menu */}
-            <Menu
-              anchorEl={anchorEl}
-              open={openMenu}
-              onClose={handleMenuClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-              <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
-              <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
-            </Menu>
-          </Box>
+                {isMobile ? (
+                    <IconButton                
+                    onClick={handleMenuOpen}
+                    >
+                      <div className="p-3 text-black rounded-full w-10 h-10 flex items-center justify-center bg-gray-200" >
+                      <PersonIcon />
+                      </div>
+                    </IconButton>
+                ) : (
+                  <Button
+                  onClick={handleMenuOpen}
+                  variant="text"
+                  sx={{ textTransform: "none", color: "#000", fontSize: 16 }}
+                  endIcon={<AccountCircle />}
+                >
+                  Sufyan Ahmed
+                </Button>
+                ) }
+            
+  
+              {/* Dropdown Menu */}
+              <Menu
+                disableScrollLock
+                anchorEl={anchorEl}
+                open={openMenu}
+                onClose={handleMenuClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+              >
+                <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+                <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
+                <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+              </Menu>
+            </Box>
+     
         </Toolbar>
       </AppBar>
 
       {/* Sidebar Drawer */}
-      <Drawer variant="permanent" open={open}>
-        <Box
+      {isMobile ? (
+        // Mobile: temporary drawer overlays the content
+        <MuiDrawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true,
+            disableScrollLock: true,
+          }}
           sx={{
-            backgroundColor: "#0f0f2d",
-            display: "flex",
-            justifyContent: "space-between",
-            height: 150,
-            alignItems: "center",
-            gap: open ? "16px" : "8px",
-            padding: open ? "8px" : "4px",
+            display: { xs: "block", sm: "none" },
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              
+              zIndex: (theme) => theme.zIndex.appBar + 10,
+         
+            },
           }}
         >
-          <Box>
-            <Typography className="text-white" variant="h6">{open ? (
-            <>
-              <span className="text-white me-0.5">Smart</span>
-              <span className="text-green-500">Grocery</span>
-            </>
-            ) : (
-              <>
-              <span className="text-white">S</span>
-              <span className="text-green-500">G</span>
-            </>
-            )}
-            </Typography>
-            
-            {open && (
-               <div  className="text-gray-300 text-sm">
-               Eat Healthy live healthy
-             </div>
-            )}
-           
-          </Box>
-
-          <IconButton
-            className="!text-white"
-            color="inherit"
-            onClick={() => setOpen(!open)}
-            edge="start"
-          >
-            {open ? <ChevronLeft /> : <ChevronRight />}
-          </IconButton>
-        </Box>
-
-        <Divider />
-        
-        <Box sx={{marginTop: 2}}>
-
-        
-        <div className="text-sm text-gray-400 px-6">
-          {open ? "Menu" : "M"}
-        </div>
-        {/* Navigation List */}
-        <List>
-          {[
-            { text: "Dashboard", icon: <Home />, link: "/modules/main" },
-            { text: "Planner", icon: <EventNote />, link: "/modules/planner" },
-            { text: "Orders", icon: <Person />, link: "/modules/order" },
-            // { text: "Invoices", icon: <Person />, link: "/clients" },
-            { text: "Settings", icon: <Settings />, link: "/settings" },
-          ].map((item) => (
-            <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
-              <Link href={item.link} passHref>
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: open ? "initial" : "center",
-                    px: 2.5,
-                    bgcolor:
-                      pathname === item.link
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "inherit",
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 0, justifyContent: "center" }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.text}
-                    sx={{ opacity: open ? 1 : 0, ml: open ? 2 : 0 }}
-                  />
-                </ListItemButton>
-              </Link>
-            </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
+          {drawerContent}
+        </MuiDrawer>
+      ) : (
+        <Drawer variant="permanent" open={open}>
+          {drawerContent}
+        </Drawer>
+      )}
 
       {/* Main Content with Smooth Transition */}
-      <MainContent sx={{ marginTop: 8 }} open={open}>
+      <MainContent sx={{ paddingTop: "64px" }} open={open}>
         {children}
       </MainContent>
     </Box>

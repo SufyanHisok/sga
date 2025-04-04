@@ -24,6 +24,10 @@ body {
   background: var(--background);
 }
 
+html, body {
+  padding: 0px !important;
+}
+
 
 .custom-input::placeholder {
   color: #c7c7c7;
