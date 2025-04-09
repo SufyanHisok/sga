@@ -12,6 +12,7 @@ import React from "react";
 import { dishes } from "@/app/data/dishes";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { generatePDF } from "@/app/utils/pdf-generate";
 export default function Planner() {
 
   const theme = useTheme();
@@ -38,7 +39,11 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   //   [key: string]: { id: number; dish: string; mealType: string }[];
   // };
 
+
+
   const router = useRouter();
+  const [sentEmail, setSentEmail] = useState("");
+  const [emailSentError, setEmailSentError] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [familyMembers, setFamilyMembers] = useState("");
   const [showGroceryPlan, setShowGroceryPlan] = useState(false);
@@ -79,7 +84,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     { label: "Dinner", value: "dinner" },
   ];
 
-  const steps = ["Plan Your Meal", "Review Plan"];
+  const steps = ["Plan", "Review" , "Confirmation"];
 
   const getIngredientsForDish = (dishName: string) => {
     const found = dishes.find(
@@ -225,7 +230,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const payload = {
       date: Date.now(),
       familyMembers: Number(familyMembers),
@@ -234,36 +239,62 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     localStorage.setItem("mealPlanData", JSON.stringify(payload));
     console.log("Submitting:", payload);
 
-    // fetch("/api/submit-meal-plan", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(payload),
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => console.log("Response:", data))
-    //   .catch((err) => console.error("Error:", err));
+    const email = "addyj79@yahoo.com";
+    setSentEmail(email);
+
+    const blob = await generatePDF("pdf-content");
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result;
+
+      const result = await fetch("/api/send-email-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          filename: "grocery-summary.pdf",
+          pdfData: base64Data,
+        }),
+      });
+
+      if (result.ok) {
+        setOpenSnackbar(true);
+        setTimeout(() =>  
+         {
+          setIsLoadingGroceryPlan(false);
+         }, 1000);
+      }
+      else {
+        console.error("Error sending email:", result.statusText);
+        setIsLoadingGroceryPlan(false);
+        setEmailSentError(true);
+    
+      }
+    };
+
+    reader.readAsDataURL(blob);
   };
 
   const handleNext = () => {
     if (activeStep === 0) {
+      setShowGroceryPlan(false);
+      setActiveStep(1);
       setIsLoadingGroceryPlan(true);
+  
       handleGenerateGroceryPlan();
-
+  
       setTimeout(() => {
         setIsLoadingGroceryPlan(false);
-        setActiveStep(1);
+        setShowGroceryPlan(true);
       }, 3500);
-    } else if (activeStep === steps.length - 1) {
+      return;
+    } else if (activeStep === 1) {
+      setActiveStep(2);
+      setIsLoadingGroceryPlan(true);
       handleSubmit();
-      setOpenSnackbar(true);
-
-      setTimeout(() => {
-        router.push("/modules/main");
-      }, 2000);
-
       return;
     }
-    setActiveStep((prev) => prev + 1);
   };
 
   const handleBack = () => {
@@ -308,42 +339,49 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
             <h3 className="text-xl font-semibold">Set Up Your Weekly Meals</h3>
 
             <div className="grid grid-cols-4 xl:grid-cols-3 lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1 max-sm:flex max-sm:flex-col">
-            <div className="flex flex-col gap-3 w-100 mt-6">
-              <div className="flex flex-col">
-                <p className="text-base text-gray-600">Select your meal plan duration</p>
-                <p className="text-xs text-gray-400">
-                  the timeframe over which you want to plan your meals
-                </p>
+              <div className="flex flex-col gap-3 w-100 mt-6">
+                <div className="flex flex-col">
+                  <p className="text-base text-gray-600">
+                    Select your meal plan duration
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    the timeframe over which you want to plan your meals
+                  </p>
+                </div>
+                <CustomDropdown
+                  label="Select your meal plan duration"
+                  options={planDuration}
+                  value={selectedDuration}
+                  onChange={(e) => setSelectedDuration(String(e))}
+                />
               </div>
-              <CustomDropdown 
-              label="Select your meal plan duration"
-              options={planDuration}
-              value={selectedDuration} 
-              onChange={(e) => setSelectedDuration(String(e))}
-              />
-            </div>
 
-            <div className="flex flex-col gap-3 w-100 mt-6">
-              <div className="flex flex-col">
-                <p className="text-base text-gray-600">Family Members</p>
-                <p className="text-xs text-gray-400">
-                  The number of people you are planning meals for
-                </p>
+              <div className="flex flex-col gap-3 w-100 mt-6">
+                <div className="flex flex-col">
+                  <p className="text-base text-gray-600">Family Members</p>
+                  <p className="text-xs text-gray-400">
+                    The number of people you are planning meals for
+                  </p>
+                </div>
+                <CustomInput
+                  type="number"
+                  placeholder="e.g. 2, 3, 4"
+                  value={familyMembers}
+                  onChange={(e) => handleFamilySizeChange(e.target.value)}
+                />
               </div>
-              <CustomInput
-                type="number"
-                placeholder="e.g. 2, 3, 4"
-                value={familyMembers}
-                onChange={(e) => handleFamilySizeChange(e.target.value)}
-              />
             </div>
-            </div>
-     
 
             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 max-sm:w-100">
               {daysOfWeek.map((day) => (
-                <Card key={day} className="mt-6 p-4 w-full" sx={{ width:{xs: "calc(100vw - 12%)", sm: "100%"}}}>
-                  <div className="text-2xl max-sm:text-lg text-slate-800 mb-2">{day}</div>
+                <Card
+                  key={day}
+                  className="mt-6 p-4 w-full"
+                  sx={{ width: { xs: "calc(100vw - 12%)", sm: "100%" } }}
+                >
+                  <div className="text-2xl max-sm:text-lg text-slate-800 mb-2">
+                    {day}
+                  </div>
                   <div className="gap-3 flex flex-col">
                     {weeklyMeals[day].map((meal, index) => (
                       <div key={meal.id} className="flex gap-2 mt-2">
@@ -433,165 +471,198 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                   <span className="text-gray-500 text-sm italic">
                     for {familyMembers || 1} serving&apos;s
                   </span>
-                  <span className="text-base ml-2 text-gray-600"> ({planDuration.find(res => res.value === selectedDuration)?.label})</span>
-                  
+                  <span className="text-base ml-2 text-gray-600">
+                    {" "}
+                    (
+                    {
+                      planDuration.find((res) => res.value === selectedDuration)
+                        ?.label
+                    }
+                    )
+                  </span>
                 </h2>
-                <table className="w-full mt-3 border-gray-200">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="p-2 text-left max-sm:text-sm">Day</th>
-                      <th className="p-2 text-left max-sm:text-sm">Item</th>
-                      <th className="p-2 text-left max-sm:text-sm">Qty</th>
-                      <th className="p-2 text-left max-sm:text-sm">Total Price</th>
-                      <th className="p-2 text-left max-sm:text-sm">Price Per Month</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.keys(groceryData).flatMap((day) => {
-                      return groceryData[day]
-                        .filter((meal) => meal.groceries?.length)
-                        .map((meal) => {
-                          const isRecurring = meal.isRecurring ?? true; // assume true if disabled
 
-                          const weeklyItems = meal.groceries?.filter(
-                            (i) => !i.isMonthlyStaple || !i.monthlyStapleToggle
-                          );
-                          const monthlyItems =
-                            meal.groceries?.filter(
-                              (i) => i.isMonthlyStaple && i.monthlyStapleToggle
-                            ) || [];
+                <div id="pdf-content" className={activeStep !== 1 ? "hidden" : ""} style={{ color: "black" }}>
+                  <table className="w-full mt-3 border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-2 text-left max-sm:text-sm">Day</th>
+                        <th className="p-2 text-left max-sm:text-sm">Item</th>
+                        <th className="p-2 text-left max-sm:text-sm">Qty</th>
+                        <th className="p-2 text-left max-sm:text-sm">
+                          Total Price
+                        </th>
+                        <th className="p-2 text-left max-sm:text-sm">
+                          Price Per Month
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.keys(groceryData).flatMap((day) => {
+                        return groceryData[day]
+                          .filter((meal) => meal.groceries?.length)
+                          .map((meal) => {
+                            const isRecurring = meal.isRecurring ?? true; // assume true if disabled
 
-                          const weeklyTotal =
-                            weeklyItems?.reduce(
-                              (sum, item) => sum + item.totalPrice,
-                              0
-                            ) || 0;
-                          const monthlyTotal =
-                            monthlyItems?.reduce(
-                              (sum, item) =>
-                                sum + item.totalPrice * (isRecurring ? 4 : 1),
-                              0
-                            ) || 0;
+                            const weeklyItems = meal.groceries?.filter(
+                              (i) =>
+                                !i.isMonthlyStaple || !i.monthlyStapleToggle
+                            );
+                            const monthlyItems =
+                              meal.groceries?.filter(
+                                (i) =>
+                                  i.isMonthlyStaple && i.monthlyStapleToggle
+                              ) || [];
 
-                          const dishTotal = weeklyTotal + monthlyTotal;
+                            const weeklyTotal =
+                              weeklyItems?.reduce(
+                                (sum, item) => sum + item.totalPrice,
+                                0
+                              ) || 0;
+                            const monthlyTotal =
+                              monthlyItems?.reduce(
+                                (sum, item) =>
+                                  sum + item.totalPrice * (isRecurring ? 4 : 1),
+                                0
+                              ) || 0;
 
-                          return (
-                            <React.Fragment key={`${day}-${meal.id}`}>
-                              <tr className="bg-gray-200">
-                                <td
-                                  colSpan={5}
-                                  className="p-3 font-semibold text-lg max-sm:text-sm"
-                                >
-                                  {meal.dish || "No Dish Selected"} –{" "}
-                                  {meal.mealType}
-                                  <span className="px-3 ml-2 text-sm rounded-xl border-emerald-200 border-1 bg-emerald-50 text-emerald-600">
-                                    {day}
-                                  </span>
-                                </td>
-                              </tr>
+                            const dishTotal = weeklyTotal + monthlyTotal;
 
-                              {weeklyItems && weeklyItems?.length > 0 && (
-                              <>
-                                  <tr className="bg-gray-100 text-sm text-gray-700">
-                                    <td colSpan={5} className="p-2 font-medium max-sm:text-xs">
-                                      Items to be delivered every {day}
-                                    </td>
-                                  </tr>
-                                  {weeklyItems.map((item, idx) => (
-                                    <tr key={`w-${meal.id}-${idx}`}>
-                                      <td className="p-2 max-sm:text-xs"></td>
-                                      <td className="p-2 max-sm:text-xs">{item.name}</td>
-                                      <td className="p-2 max-sm:text-xs">
-                                        {item.qty.toFixed(2)} {item.unit}
-                                      </td>
-                                      <td className="p-2 max-sm:text-xs">
-                                        Rs. {item.totalPrice.toFixed(2)}
-                                      </td>
-                                      <td className="p-2 max-sm:text-xs">–</td>
-                                    </tr>
-                                  ))}
-                                </>
-                              )}
+                            return (
+                              <React.Fragment key={`${day}-${meal.id}`}>
+                                <tr className="bg-gray-200">
+                                  <td
+                                    colSpan={5}
+                                    className="p-3 font-semibold text-lg max-sm:text-sm"
+                                  >
+                                    {meal.dish || "No Dish Selected"} –{" "}
+                                    {meal.mealType}
+                                    <span className="px-3 ml-2 text-sm rounded-xl border-emerald-200 border-1 bg-emerald-50 text-emerald-600">
+                                      {day}
+                                    </span>
+                                  </td>
+                                </tr>
 
-                              {monthlyItems?.length > 0 && (
-                                <>
-                                  <tr className="bg-gray-100 text-sm text-gray-700">
-                                    <td colSpan={5} className="p-2 font-medium max-sm:text-xs">
-                                      Items to be delivered on 1st {day} of each
-                                      month
-                                    </td>
-                                  </tr>
-                                  {monthlyItems.map((item, idx) => (
-                                    <tr key={`m-${meal.id}-${idx}`}>
-                                      <td className="p-2 max-sm:text-xs"></td>
-                                      <td className="p-2 max-sm:text-xs">{item.name}</td>
-                                      <td className="p-2 max-sm:text-xs">
-                                        {(
-                                          item.qty * (isRecurring ? 4 : 1)
-                                        ).toFixed(2)}{" "}
-                                        {item.unit}
-                                      </td>
-                                      <td className="p-2 max-sm:text-xs">-</td>
-                                      <td className="p-2 max-sm:text-xs">
-                                        Rs.{" "}
-                                        {(
-                                          item.totalPrice *
-                                          (isRecurring ? 4 : 1)
-                                        ).toFixed(2)}
+                                {weeklyItems && weeklyItems?.length > 0 && (
+                                  <>
+                                    <tr className="bg-gray-100 text-sm text-gray-700">
+                                      <td
+                                        colSpan={5}
+                                        className="p-2 font-medium max-sm:text-xs"
+                                      >
+                                        Items to be delivered every {day}
                                       </td>
                                     </tr>
-                                  ))}
-                                </>
-                              )}
-                              <tr className="bg-gray-100 font-semibold border-gray-400 max-sm:text-sm">
-                                <td colSpan={4} className="p-2 underline">
-                                  Total for {meal.dish}
-                                </td>
-                                <td className="p-2 text-lg max-sm:text-sm">
-                                  Rs. {dishTotal.toFixed(2)}
-                                  {/* {monthlyTotal > 0 && (
+                                    {weeklyItems.map((item, idx) => (
+                                      <tr key={`w-${meal.id}-${idx}`}>
+                                        <td className="p-2 max-sm:text-xs"></td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          {item.name}
+                                        </td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          {item.qty.toFixed(2)} {item.unit}
+                                        </td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          Rs. {item.totalPrice.toFixed(2)}
+                                        </td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          –
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </>
+                                )}
+
+                                {monthlyItems?.length > 0 && (
+                                  <>
+                                    <tr className="bg-gray-100 text-sm text-gray-700">
+                                      <td
+                                        colSpan={5}
+                                        className="p-2 font-medium max-sm:text-xs"
+                                      >
+                                        Items to be delivered on 1st {day} of
+                                        each month
+                                      </td>
+                                    </tr>
+                                    {monthlyItems.map((item, idx) => (
+                                      <tr key={`m-${meal.id}-${idx}`}>
+                                        <td className="p-2 max-sm:text-xs"></td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          {item.name}
+                                        </td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          {(
+                                            item.qty * (isRecurring ? 4 : 1)
+                                          ).toFixed(2)}{" "}
+                                          {item.unit}
+                                        </td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          -
+                                        </td>
+                                        <td className="p-2 max-sm:text-xs">
+                                          Rs.{" "}
+                                          {(
+                                            item.totalPrice *
+                                            (isRecurring ? 4 : 1)
+                                          ).toFixed(2)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </>
+                                )}
+                                <tr className="bg-gray-100 font-semibold border-gray-400 max-sm:text-sm">
+                                  <td colSpan={4} className="p-2 underline">
+                                    Total for {meal.dish}
+                                  </td>
+                                  <td className="p-2 text-lg max-sm:text-sm">
+                                    Rs. {dishTotal.toFixed(2)}
+                                    {/* {monthlyTotal > 0 && (
                                     <div className="text-xs text-emerald-600">
                                       + Monthly: Rs. {monthlyTotal.toFixed(2)}
                                     </div>
                                   )} */}
-                                </td>
-                              </tr>
-                            </React.Fragment>
-                          );
-                        });
-                    })}
+                                  </td>
+                                </tr>
+                              </React.Fragment>
+                            );
+                          });
+                      })}
 
-                    {/* Grand total row */}
-                    <tr className="font-semibold border-t border-gray-400">
-                      <td colSpan={4} className="p-3 text-lg max-sm:text-base">
-                        Estimated Grand Total
-                      </td>
-                      <td className="p-3 text-lg max-sm:text-base">
-                        {(() => {
-                          let total = 0;
-                          Object.values(groceryData).forEach((meals) => {
-                            meals.forEach((meal) => {
-                              if (!meal.groceries) return;
-                              const isRecurring = meal.isRecurring ?? true;
-                              meal.groceries.forEach((item) => {
-                                if (
-                                  item.isMonthlyStaple &&
-                                  item.monthlyStapleToggle
-                                ) {
-                                  total +=
-                                    item.totalPrice * (isRecurring ? 4 : 1);
-                                } else {
-                                  total += item.totalPrice;
-                                }
+                      {/* Grand total row */}
+                      <tr className="font-semibold border-t border-gray-400">
+                        <td
+                          colSpan={4}
+                          className="p-3 text-lg max-sm:text-base"
+                        >
+                          Estimated Grand Total
+                        </td>
+                        <td className="p-3 text-lg max-sm:text-base">
+                          {(() => {
+                            let total = 0;
+                            Object.values(groceryData).forEach((meals) => {
+                              meals.forEach((meal) => {
+                                if (!meal.groceries) return;
+                                const isRecurring = meal.isRecurring ?? true;
+                                meal.groceries.forEach((item) => {
+                                  if (
+                                    item.isMonthlyStaple &&
+                                    item.monthlyStapleToggle
+                                  ) {
+                                    total +=
+                                      item.totalPrice * (isRecurring ? 4 : 1);
+                                  } else {
+                                    total += item.totalPrice;
+                                  }
+                                });
                               });
                             });
-                          });
-                          return `Rs. ${total.toFixed(2)}`;
-                        })()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                            return `Rs. ${total.toFixed(2)}`;
+                          })()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
                 {/* <div className="flex justify-center mt-4">
           <CustomButton
             label="Submit Plan"
@@ -606,7 +677,52 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
         </>
       )}
 
-      {!isLoadingGroceryPlan && (
+      {activeStep === 2 && (
+        <div className="text-center mt-10">
+          {isLoadingGroceryPlan ? (
+            <div className="flex justify-center items-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-gray-500 mx-auto mb-4"></div>
+              <p className="text-gray-500 text-sm">
+                Submitting the plan & generating invoice...
+              </p>
+            </div>
+          </div>
+          ) : emailSentError ? (
+            <>
+              <h2 className="text-xl font-semibold mb-2 text-red-600">
+                Failed to send invoice 😓
+              </h2>
+              <p className="text-gray-500">Please try again later.</p>
+              <div className="flex justify-center mt-6">
+                <CustomButton
+                  label="Go to Dashboard"
+                  className="bg-blue-700 text-white px-5"
+                  onClick={() => router.push("/modules/main")}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold mt-20 mb-2 text-green-600">
+                Your invoice has been sent to{" "}
+                <span className="font-bold">{sentEmail}</span>
+              </h2>
+              <div className="flex justify-center gap-4 mt-6">
+                <CustomButton
+                  label="Go to Dashboard"
+                  className="bg-blue-700 text-white px-5"
+                  onClick={() => router.push("/modules/main")}
+                />
+            
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+
+      {!isLoadingGroceryPlan  && activeStep < 2 && (
         <div className="flex justify-between mt-6">
           {activeStep > 0 && (
             <CustomButton label="Back" className="px-3" onClick={handleBack} />
@@ -617,15 +733,15 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
         </Button> */}
 
           <CustomButton
-            className="px-5 py-4 bg-black text-white"
-            label={activeStep === steps.length - 1 ? "Submit" : "Generate Plan"}
+            className="px-5 py-4 bg-blue-700 text-white"
+            label={activeStep === steps.length - 2 ? "Submit" : "Generate Plan"}
             onClick={handleNext}
           />
         </div>
       )}
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={3000}
+        autoHideDuration={5000}
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >

@@ -37,7 +37,6 @@
   
   /* Customize event cards */
   .rbc-event {
-    background-color: oklch(0.54 0.06 158.53) !important;
     border-radius: 5px;
     padding: 5px;
     font-size: 14px;

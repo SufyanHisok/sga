@@ -18,7 +18,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({ className, label,  onClick,
       onClick={onClick} 
       style={{ fontSize: isMobile ? "14px" : "14px" }}
       className={`flex border-1 border-solid rounded-xl p-1 border-gray-200 items-center gap-2 
-        hover:bg-gray-100 hover:border-gray-300
+        hover:bg-blue-500 hover:border-gray-300 
         transition-all duration-300 cursor-pointer
         ${className}`}
     >

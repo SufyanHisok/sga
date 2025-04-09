@@ -36,8 +36,10 @@ import {
 import CircularProgress from "@mui/material/CircularProgress";
 import PersonIcon from "@mui/icons-material/Person";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import MenuIcon from "@mui/icons-material/Menu";
+import { signOut } from "firebase/auth";
+import { auth } from "@/app/utils/firebase-api";
 
 const drawerWidth = 240;
 
@@ -116,17 +118,43 @@ const MainContent = styled(Box, {
 
 const CustomLayout = ({ children }: { children: React.ReactNode }) => {
   const theme = useTheme();
+  const router = useRouter();
+  const [userName, setUserName] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
     setMounted(true); // hydration done
+
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserName(user.displayName || "User");
+      } catch (err) {
+        console.error("Invalid user data", err);
+      }
+    }
+
     const timer = setTimeout(() => {
       setShowLoader(false); // hide loader after 3 sec
     }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
+
+ 
+
+  const handleLogout = async () => {
+    try{
+      await signOut(auth);
+      localStorage.removeItem("user");
+      router.push("/login");
+    }
+    catch (error){
+      console.log("Invalid User", error)
+    }
+  }
 
   const rawisMobile = useMediaQuery(theme.breakpoints.down("sm"), {
     noSsr: true,
@@ -181,7 +209,7 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
     <>
       <Box
         sx={{
-          backgroundColor: "#0f0f2d",
+          backgroundColor: "#1447e6",
           display: "flex",
           justifyContent: "space-between",
           height: 150,
@@ -206,7 +234,7 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
           </Typography>
 
           {open && (
-            <div className="text-gray-300 text-sm">
+            <div className="text-gray-200 text-sm">
               Eat Healthy live healthy
             </div>
           )}
@@ -296,36 +324,43 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
             </Button>
           )}
 
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="Search..."
-            sx={{
-              backgroundColor: "#f5f5f5",
-              borderRadius: 1,
-              width: { xs: "200px", sm: "250px" },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "transparent",
+          {isMobile && (
+            <div><h2 className="text-black font-semibold text-xl">Smart <span className="text-green-500"> Grocery </span></h2></div>
+          )}
+
+          {!isMobile && (
+              <TextField
+              variant="outlined"
+              size="small"
+              placeholder="Search..."
+              sx={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: 1,
+                width: { xs: "200px", sm: "250px" },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "transparent",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#ccc",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#1976D2",
+                  },
                 },
-                "&:hover fieldset": {
-                  borderColor: "#ccc",
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Search sx={{ color: "#666" }} /> {/* 🔥 Search Icon */}
+                    </InputAdornment>
+                  ),
                 },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#1976D2",
-                },
-              },
-            }}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Search sx={{ color: "#666" }} /> {/* 🔥 Search Icon */}
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
+              }}
+            />
+          )}
+        
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {isMobile ? (
@@ -341,7 +376,7 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
                 sx={{ textTransform: "none", color: "#000", fontSize: 16 }}
                 endIcon={<AccountCircle />}
               >
-                Sufyan Ahmed
+                {userName || "user"}
               </Button>
             )}
 
@@ -354,9 +389,8 @@ const CustomLayout = ({ children }: { children: React.ReactNode }) => {
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               transformOrigin={{ vertical: "top", horizontal: "right" }}
             >
-              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
               <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
-              <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
           </Box>
         </Toolbar>

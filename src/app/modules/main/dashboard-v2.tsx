@@ -73,7 +73,7 @@ export default function Dashboard() {
             <CustomButton
               label="Generate Plan"
               icon={AddIcon}
-              className="px-3 mt-3 max-sm:w-full max-sm:flex max-sm:justify-center"
+              className="px-3 mt-3 max-sm:w-full max-sm:flex max-sm:justify-center bg-blue-700 text-white"
               onClick={() => router.push("/modules/planner")}
             />
           </div>
