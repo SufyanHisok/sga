@@ -49,7 +49,7 @@ export default function LoginPage() {
         {/* Right Side */}
         <div className="w-2/3 max-sm:w-full flex justify-center items-center bg-white">
     
-          <div className="w-full flex flex-col justify-center text-center max-sm:flex max-sm:min-h-10/12 max-sm:flex-col max-sm:justify-start max-sm:mt-10 max-sm:px-6">
+          <div className="flex flex-col justify-center text-center max-sm:flex max-sm:min-h-10/12 max-sm:flex-col max-sm:justify-start max-sm:mt-10 max-sm:px-6">
           <div className="min-sm:hidden rounded-md bg-blue-700 h-55 mb-10 flex flex-col justify-center items-center gap-6 shadow-xl">
             <h2 className="text-2xl  text-left font-semibold text-white">Smart <span className="text-green-500">Grocery</span></h2>
             <div>
@@ -62,7 +62,7 @@ export default function LoginPage() {
             <h2 className="text-2xl max-sm:text-lg font-semibold mb-6 text-black">Login to your account</h2>
             <button
               onClick={handleLogin}
-              className="flex items-center cursor-pointer justify-center min-sm:w-100 py-3 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="flex items-center cursor-pointer justify-center min-sm:w-100 px-10 py-3 border border-gray-300 rounded-md hover:bg-gray-50"
             >
               <Image
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
