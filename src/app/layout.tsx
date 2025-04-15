@@ -7,6 +7,7 @@ import { Poppins } from "next/font/google";
 import "@/app//globals.css";
 import AuthGuard from "./modules/auth-guard/auth-guard";
 import { usePathname } from "next/navigation";
+import MobileSplash from "./splash-screen/mob-splash";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -22,7 +23,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-poppins">
         <ThemeProvider theme={theme}>
           {isLoginPage ? (
-            children
+            <>
+              <MobileSplash />
+              {/* rest of your login page */}
+              {children}
+            </>
           ) : (
             <AuthGuard>
               <CustomLayout>{children}</CustomLayout>

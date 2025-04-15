@@ -6,6 +6,7 @@ import { signInWithPopup } from "firebase/auth";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import LogoIcon from '@/assets/icons/grocery-icon.png'; 
 
 export default function LoginPage() {
     const router = useRouter();
@@ -32,8 +33,8 @@ export default function LoginPage() {
       <div className="flex h-screen">
         {/* Left Side */}
         <div className="w-1/3 max-sm:hidden bg-blue-700 text-white flex flex-col gap-40 justify-center items-start px-16">
-          <div className="text-2xl font-extrabold">
-            Smart <span className="text-green-500">Grocery</span>
+          <div className="text-2xl font-extrabold flex gap-2">
+          <Image src={LogoIcon} alt="..." className="w-7 h-7" /> <div>Smart<span className="text-green-500">Grocery</span> </div>
           </div>
 
           <div>
@@ -54,8 +55,8 @@ export default function LoginPage() {
         <div className="w-2/3 max-sm:w-full flex justify-center items-center bg-white">
           <div className="flex flex-col min-sm:gap-6 max-sm:gap-6 justify-center text-center max-sm:flex max-sm:min-h-10/12 max-sm:min-w-11/12 max-sm:flex-col max-sm:justify-start max-sm:mt-3 max-sm:px-2">
             <div className="min-sm:hidden flex flex-col justify-center items-center mb-3 gap-6">
-              <h2 className="text-2xl  text-left font-semibold text-black">
-                Smart <span className="text-green-500">Grocery</span>
+              <h2 className="text-3xl  text-left font-semibold flex gap-2 text-black">
+              <Image src={LogoIcon} alt="..." className="w-9 h-9" /> <div className="mt-1"> Smart<span className="text-green-500">Grocery</span> </div>
               </h2>
               {/* <div>
                 <h1 className="text-lg  text-white mb-1">Welcome Back!</h1>
@@ -64,7 +65,7 @@ export default function LoginPage() {
                 </h1>
               </div> */}
             </div>
-            <h2 className="text-2xl max-sm:text-lg font-semibold mb-6 max-sm:mb-2 text-black max-sm:font-medium max-sm:text-sm">
+            <h2 className="text-2xl max-sm:text-lg  font-semibold mb-6 max-sm:mb-2 text-gray-700 max-sm:font-medium">
               Login to your account
             </h2>
 
