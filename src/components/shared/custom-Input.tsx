@@ -4,7 +4,7 @@ interface CustomInputProps {
   type?: string;
   className?: string;
   placeholder?: string;
-  value?: string;  // Controlled input value
+  value?: string | number;  // Controlled input value
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; // Event handler
   width?: string;
 }

@@ -6,6 +6,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useRouter } from 'next/navigation';
 import { useMediaQuery, useTheme } from "@mui/material";
+import { useLoading } from "@/app/services/loading-service";
 const groupedIngredients = {
  Biryani: [
     { name: "Chicken", unit: "500g" },
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const router = useRouter();
+    const loader = useLoading();
   return (
     <div>
       {/* <p className="text-xs text-gray-500">Welcome back</p>
@@ -74,7 +76,10 @@ export default function Dashboard() {
               label="Generate Plan"
               icon={AddIcon}
               className="px-3 mt-3 max-sm:w-full max-sm:flex max-sm:justify-center bg-blue-700 text-white"
-              onClick={() => router.push("/modules/planner")}
+              onClick={() => {
+                loader.setLoading(true);
+                router.push("/modules/planner")}
+              }
             />
           </div>
 

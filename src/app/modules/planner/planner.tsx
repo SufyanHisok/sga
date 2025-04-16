@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import CustomButton from "@/components/shared/custom-btn";
 import CustomInput from "@/components/shared/custom-Input";
 import { Card, useMediaQuery, useTheme } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import CustomDropdown from "@/components/shared/custom-dropdown";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
@@ -13,6 +13,7 @@ import { dishes } from "@/app/data/dishes";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { generatePDF } from "@/app/utils/pdf-generate";
+import { useLoading } from "@/app/services/loading-service";
 export default function Planner() {
 
   const theme = useTheme();
@@ -60,6 +61,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [activeStep, setActiveStep] = useState(0);
   const [isLoadingGroceryPlan, setIsLoadingGroceryPlan] = useState(false);
+  const loader = useLoading();
 
   const daysOfWeek = [
     "Monday",
@@ -98,10 +100,15 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     value: dish.dish,
   }));
 
+  useEffect(() => {
+    loader.setLoading(false);
+  })
+
   const handleGenerateGroceryPlan = () => {
     setGroceryData(weeklyMeals);
     setShowGroceryPlan(true);
   };
+
 
   const handleAddMeal = (day: string) => {
     if (weeklyMeals[day].length >= 4) return;
@@ -302,7 +309,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   };
 
   return (
-    <div className="p-2 ">
+    <div className="p-2 max-sm:mb-16">
       <div className="flex items-center gap-2 rounded-md w-fit">
         {steps.map((label, index) => (
           <div key={index} className="flex items-center">
@@ -482,7 +489,11 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                   </span>
                 </h2>
 
-                <div id="pdf-content" className={activeStep !== 1 ? "hidden" : ""} style={{ color: "black" }}>
+                <div
+                  id="pdf-content"
+                  className={activeStep !== 1 ? "hidden" : ""}
+                  style={{ color: "black" }}
+                >
                   <table className="w-full mt-3 border-gray-200">
                     <thead>
                       <tr className="bg-gray-100">
@@ -681,13 +692,13 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
         <div className="text-center mt-10">
           {isLoadingGroceryPlan ? (
             <div className="flex justify-center items-center h-96">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-gray-500 mx-auto mb-4"></div>
-              <p className="text-gray-500 text-sm">
-                Submitting the plan & generating invoice...
-              </p>
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-gray-500 mx-auto mb-4"></div>
+                <p className="text-gray-500 text-sm">
+                  Submitting the plan & generating invoice...
+                </p>
+              </div>
             </div>
-          </div>
           ) : emailSentError ? (
             <>
               <h2 className="text-xl font-semibold mb-2 text-red-600">
@@ -714,16 +725,30 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                   className="bg-blue-700 text-white px-5"
                   onClick={() => router.push("/modules/main")}
                 />
-            
               </div>
             </>
           )}
         </div>
       )}
 
+      {!isLoadingGroceryPlan && activeStep < 2 && (
+        <div className="mt-6 min-sm:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 flex justify-between items-center z-50">
+          {activeStep > 0 ? (
+            <CustomButton label="Back" className="px-3" onClick={handleBack} />
+          ) : (
+            <div />
+          )}
 
-      {!isLoadingGroceryPlan  && activeStep < 2 && (
-        <div className="flex justify-between mt-6">
+          <CustomButton
+            className="px-5 py-4 bg-blue-700 text-white"
+            label={activeStep === steps.length - 2 ? "Submit" : "Generate Plan"}
+            onClick={handleNext}
+          />
+        </div>
+      )}
+
+      {!isLoadingGroceryPlan && activeStep < 2 && (
+        <div className="flex justify-between mt-6 max-sm:hidden">
           {activeStep > 0 && (
             <CustomButton label="Back" className="px-3" onClick={handleBack} />
           )}

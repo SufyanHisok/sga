@@ -8,6 +8,8 @@ import "@/app//globals.css";
 import AuthGuard from "./modules/auth-guard/auth-guard";
 import { usePathname } from "next/navigation";
 import MobileSplash from "./splash-screen/mob-splash";
+import { LoadingProvider } from "./services/loading-service";
+import Loader from "./modules/loader/loader";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -18,21 +20,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   const isLoginPage = pathname === '/login';
+  const isOnboardingPage = pathname === '/modules/onboarding';
+
   return (
     <html lang="en" className={poppins.className}>
       <body className="font-poppins">
         <ThemeProvider theme={theme}>
-          {isLoginPage ? (
-            <>
-              <MobileSplash />
-              {/* rest of your login page */}
-              {children}
-            </>
-          ) : (
-            <AuthGuard>
-              <CustomLayout>{children}</CustomLayout>
-            </AuthGuard>
-          )}
+          <LoadingProvider>
+           
+            {isLoginPage || isOnboardingPage ? (
+              <>
+                {isLoginPage && <MobileSplash />}
+                {children}
+              </>
+            ) : (
+              <AuthGuard>
+                <CustomLayout>  <Loader /> {children}</CustomLayout>
+              </AuthGuard>
+            )}
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>

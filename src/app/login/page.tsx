@@ -23,7 +23,15 @@ export default function LoginPage() {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
         localStorage.setItem('user', JSON.stringify(user));
-        router.push('/modules/main');
+
+        const userPreferences = localStorage.getItem("userPreferences");
+        if (userPreferences) {
+          // Existing user – go to main dashboard
+          router.push("/modules/main");
+        } else {
+          // New user – go to onboarding
+          router.push("/modules/onboarding");
+        }
       } catch (error) {
         console.error('Google login failed', error);
       }
