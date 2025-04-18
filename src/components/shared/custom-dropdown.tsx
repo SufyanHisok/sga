@@ -45,6 +45,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ label, options, value, 
           alignItems: "center",
           justifyContent: "space-between",
           fontSize: isMobile ? "12px" : "14px",
+          padding: isMobile ? "8px 15px" : "",
         }}
         variant="outlined"
         endIcon={<ArrowDropDownIcon />}

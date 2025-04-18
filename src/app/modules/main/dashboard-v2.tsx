@@ -1,6 +1,6 @@
 import CustomButton from "@/components/shared/custom-btn";
 import AddIcon from "@mui/icons-material/Add";
-import React from "react";
+import React, { useState } from "react";
 import TodayIcon from '@mui/icons-material/Today';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -33,6 +33,16 @@ export default function Dashboard() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const router = useRouter();
     const loader = useLoading();
+    const [openIndexes, setOpenIndexes] = useState<number[]>([0]);
+
+    const toggleAccordion = (index: number) => {
+      setOpenIndexes((prev) =>
+        prev.includes(index)
+          ? prev.filter((i) => i !== index)
+          : [...prev, index]
+      );
+    };
+
   return (
     <div>
       {/* <p className="text-xs text-gray-500">Welcome back</p>
@@ -78,8 +88,8 @@ export default function Dashboard() {
               className="px-3 mt-3 max-sm:w-full max-sm:flex max-sm:justify-center bg-blue-700 text-white"
               onClick={() => {
                 loader.setLoading(true);
-                router.push("/modules/planner")}
-              }
+                router.push("/modules/planner");
+              }}
             />
           </div>
 
@@ -88,7 +98,7 @@ export default function Dashboard() {
               Items to be delivered today!
             </h3>
 
-            <div className="max-h-80 overflow-y-auto">
+            <div className="max-h-80 overflow-y-auto max-sm:hidden">
               {/* Desktop View */}
               <div className="hidden md:block">
                 <table className="w-full border border-gray-200 rounded-lg overflow-hidden text-sm text-left">
@@ -146,11 +156,45 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-
             </div>
 
-          </div>
+            <div className="min-sm:hidden">
+              {data.map((group, index) => (
+                <div
+                  key={index}
+                  className="mb-4 border border-gray-200 rounded-lg overflow-hidden bg-white"
+                >
+                  {/* Header */}
+                  <button
+                    onClick={() => toggleAccordion(index)}
+                    className="w-full flex justify-between items-center p-4 text-left bg-gray-100"
+                  >
+                    <div className="font-semibold text-gray-800">
+                      {group.dish}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {group.expectedDelivery &&
+                        `Expected: ${group.expectedDelivery}`}
+                    </div>
+                  </button>
 
+                  {/* Body */}
+                  {openIndexes.includes(index) && (
+                    <div className="p-4 bg-white border-t border-gray-200">
+                      <ul className="text-gray-700 text-sm space-y-2">
+                        {group.items.map((item, idx) => (
+                          <li key={idx} className="flex justify-between">
+                            <span>- {item.name}</span>
+                            <span className="font-semibold">{item.unit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* RIGHT SECTION (25%) */}
@@ -163,7 +207,9 @@ export default function Dashboard() {
                 <p className="text-xl font-bold mt-1">88$ USD</p>
               </div>
               <div className="bg-blue-100 text-blue-500 p-3 max-sm:w-10 max-sm:h-10 max-sm:flex rounded-full">
-                <AttachMoneyIcon style={{ fontSize: isMobile ? "16px" : undefined }} />
+                <AttachMoneyIcon
+                  style={{ fontSize: isMobile ? "16px" : undefined }}
+                />
               </div>
             </div>
             <div className="flex items-center text-sm text-red-500 gap-1">
@@ -181,7 +227,9 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="bg-slate-100 text-slate-600 p-3 rounded-full max-sm:w-10 max-sm:h-10 max-sm:flex">
-                <TodayIcon style={{ fontSize: isMobile ? "16px" : undefined }} />
+                <TodayIcon
+                  style={{ fontSize: isMobile ? "16px" : undefined }}
+                />
               </div>
             </div>
             <div className="flex flex-col mt-4 gap-3">
@@ -213,7 +261,9 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-500">Our Recommendation</p>
               </div>
               <div className="bg-slate-100 text-slate-600 p-3 rounded-full max-sm:w-10 max-sm:h-10 max-sm:flex">
-                <AutoAwesomeIcon style={{ fontSize: isMobile ? "14px" : undefined }} />
+                <AutoAwesomeIcon
+                  style={{ fontSize: isMobile ? "14px" : undefined }}
+                />
               </div>
             </div>
             <div className="flex flex-col mt-4 gap-3">

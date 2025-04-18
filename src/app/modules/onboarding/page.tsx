@@ -3,7 +3,7 @@
 import Image from "next/image";
 import chefImage from '@/assets/images/chef.svg';
 import { useState } from "react";
-import CustomInput from "@/components/shared/custom-Input";
+// import CustomInput from "@/components/shared/custom-Input";
 import CheckIcon from '@mui/icons-material/Check';
 import CustomButton from "@/components/shared/custom-btn";
 import { useRouter } from "next/navigation";
@@ -14,12 +14,13 @@ export default function OnboardingPage() {
     const [activeStep, setActiveStep] = useState(0);
     const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
     const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
-    const [kidsCount, setKidsCount] = useState(0);
-    const [adultsCount, setAdultsCount] = useState(0);
-    const [eldersCount, setEldersCount] = useState(0);
+    const [kidsCount, setKidsCount] = useState<number | null>(null);
+    const [adultsCount, setAdultsCount] = useState<number | null>(null);
+    const [eldersCount, setEldersCount] = useState<number | null>(null);
     const allergyOptions = ["Dairy", "Gluten", "Peanuts", "Seafood", "Soy", "Wheat"];
     const cuisinesOptions = ["Italian", "Mexican", "Desi", "Chinese", "Vegetarian"];
     const budgetOptions = ["PKR 5,000 – 10,000", "PKR 10,000 – 20,000", "Above PKR 20,000", "Skip for now"];
+    const countOptions = [0, 1, 2, 3, 4, 5];
     const totalSteps = 5;
 
 
@@ -29,7 +30,7 @@ export default function OnboardingPage() {
       if (activeStep < totalSteps - 1) {
         setActiveStep((prev) => prev + 1);
       } else {
-        const familyMembers = kidsCount + adultsCount + eldersCount;
+        const familyMembers = (kidsCount ?? 0) + (adultsCount ?? 0) + (eldersCount ?? 0)
 
         const user = localStorage.getItem('user');
         const userData = JSON.parse(user!);
@@ -112,35 +113,62 @@ export default function OnboardingPage() {
              👨‍👩‍👧‍👦 How many people are in your household?
            </h2>
            <div className="flex flex-col gap-5 px-30 max-sm:px-0">
-             <div className="flex justify-between items-center bg-gray-50 py-1 px-2 rounded">
+             <div className="flex justify-between max-sm:flex-col max-sm:gap-3 max-sm:py-3 items-center  py-1 px-2 rounded">
                <p className="text-gray-800">Kids (4-12 Yrs)</p>
-               <CustomInput
-                 value={kidsCount}
-                 type="number"
-                 onChange={(e) => setKidsCount(Number(e.target.value))}
-                 width="100px"
-                 className="text-gray-800 bg-white"
-               />
+               <div className="flex flex-wrap max-sm:justify-center gap-2">
+                 {countOptions.map((num) => (
+                   <button
+                     key={num}
+                     onClick={() => setKidsCount(num)}
+                     className={`px-6 py-1 rounded-full border text-sm cursor-pointer
+                      ${
+                        kidsCount === num
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-800 border-gray-300"
+                      }`}
+                   >
+                     {num}
+                   </button>
+                 ))}
+               </div>
              </div>
-             <div className="flex justify-between items-center bg-gray-50 py-1 px-2 rounded">
+             <div className="flex justify-between items-center py-1 px-2 rounded max-sm:flex-col max-sm:gap-3 max-sm:py-3">
                <p className="text-gray-800">Adults (18-43 Yrs)</p>
-               <CustomInput
-                 value={adultsCount}
-                 type="number"
-                 onChange={(e) => setAdultsCount(Number(e.target.value))}
-                 width="100px"
-                 className="text-gray-800 bg-white"
-               />
+               <div className="flex flex-wrap gap-2 max-sm:justify-center">
+                 {countOptions.map((num) => (
+                   <button
+                     key={num}
+                     onClick={() => setAdultsCount(num)}
+                     className={`px-6 py-1 rounded-full border text-sm cursor-pointer
+                      ${
+                        adultsCount === num
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-800 border-gray-300"
+                      }`}
+                   >
+                     {num}
+                   </button>
+                 ))}
+               </div>
              </div>
-             <div className="flex justify-between items-center bg-gray-50 py-1 px-2 rounded">
+             <div className="flex justify-between items-center  py-1 px-2 rounded max-sm:flex-col max-sm:gap-3 max-sm:py-3">
                <p className="text-gray-800">Elders (50+ Yrs)</p>
-               <CustomInput
-                 value={eldersCount}
-                 onChange={(e) => setEldersCount(Number(e.target.value))}
-                 type="number"
-                 width="100px"
-                 className="text-gray-800 bg-white"
-               />
+               <div className="flex flex-wrap gap-2 max-sm:justify-center">
+                 {countOptions.map((num) => (
+                   <button
+                     key={num}
+                     onClick={() => setEldersCount(num)}
+                     className={`px-6 py-1 rounded-full border text-sm cursor-pointer
+                      ${
+                        eldersCount === num
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-800 border-gray-300"
+                      }`}
+                   >
+                     {num}
+                   </button>
+                 ))}
+               </div>
              </div>
            </div>
          </div>
@@ -259,7 +287,9 @@ export default function OnboardingPage() {
              <CustomButton
                onClick={handleNext}
                className="px-6 py-2 bg-blue-700 text-white"
-               label={activeStep === totalSteps - 1 ? "Go to dashboard" : "Next"}
+               label={
+                 activeStep === totalSteps - 1 ? "Go to dashboard" : "Next"
+               }
              />
            </div>
          </div>
@@ -277,13 +307,12 @@ export default function OnboardingPage() {
          )}
 
          {activeStep < totalSteps - 1 && (
-            <CustomButton
-            onClick={handleNext}
-            className="px-6 py-2 bg-blue-700 text-white"
-            label={activeStep === totalSteps - 1 ? "Go to dashboard" : "Next"}
-          />
+           <CustomButton
+             onClick={handleNext}
+             className="px-6 py-2 bg-blue-700 text-white"
+             label={activeStep === totalSteps - 1 ? "Go to dashboard" : "Next"}
+           />
          )}
-        
        </div>
 
        {/* NAVIGATION BUTTONS */}

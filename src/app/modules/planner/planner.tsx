@@ -6,7 +6,7 @@ import { Card, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import CustomDropdown from "@/components/shared/custom-dropdown";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import CloseIcon from '@mui/icons-material/Close';
 import React from "react";
 
 import { dishes } from "@/app/data/dishes";
@@ -359,6 +359,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                   label="Select your meal plan duration"
                   options={planDuration}
                   value={selectedDuration}
+                  width={isMobile ? "calc(100vw - 12%)" : ""}
                   onChange={(e) => setSelectedDuration(String(e))}
                 />
               </div>
@@ -372,6 +373,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                 </div>
                 <CustomInput
                   type="number"
+                  width={isMobile ? "calc(100vw - 12%)" : ""}
                   placeholder="e.g. 2, 3, 4"
                   value={familyMembers}
                   onChange={(e) => handleFamilySizeChange(e.target.value)}
@@ -383,8 +385,11 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
               {daysOfWeek.map((day) => (
                 <Card
                   key={day}
-                  className="mt-6 p-4 w-full"
-                  sx={{ width: { xs: "calc(100vw - 12%)", sm: "100%" } }}
+                  className="mt-6 p-4 w-full max-sm:p-1 max-sm:mt-4"
+                  sx={{
+                    width: { xs: "calc(100vw - 12%)", sm: "100%" },
+                    boxShadow: { xs: "none" },
+                  }}
                 >
                   <div className="text-2xl max-sm:text-lg text-slate-800 mb-2">
                     {day}
@@ -413,7 +418,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
                         <CustomDropdown
                           label="Meal Type"
-                          width={isMobile ? "125px" : "150px"}
+                          width={isMobile ? "112px" : "150px"}
                           options={mealOptions}
                           value={meal.mealType}
                           onChange={(e) =>
@@ -440,7 +445,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                             onClick={() => handleDishDelete(day, meal.id)}
                             className="text-red-500"
                           >
-                            <HighlightOffIcon />
+                            <CloseIcon />
                           </button>
                         )}
                       </div>
@@ -475,10 +480,10 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
               <div className="mt-8">
                 <h2 className="text-xl font-semibold">
                   Grocery Plan{" "}
-                  <span className="text-gray-500 text-sm italic">
+                  <span className="text-gray-500 text-sm italic max-sm:hidden">
                     for {familyMembers || 1} serving&apos;s
                   </span>
-                  <span className="text-base ml-2 text-gray-600">
+                  <span className="text-base ml-2 text-gray-600 max-sm:hidden">
                     {" "}
                     (
                     {
@@ -488,22 +493,35 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                     )
                   </span>
                 </h2>
+                <div className="flex gap-3 min-sm:hidden mt-1.5">
+                  <div className="bg-gray-100 py-1 px-4 rounded-2xl w-fit text-sm">
+                    {" "}
+                    {familyMembers || 1} serving&apos;s
+                  </div>
+                  <div className="bg-gray-100 py-1 px-4 rounded-2xl w-fit text-sm">
+                    {" "}
+                    {
+                      planDuration.find((res) => res.value === selectedDuration)
+                        ?.label
+                    }
+                  </div>
+                </div>
 
                 <div
                   id="pdf-content"
                   className={activeStep !== 1 ? "hidden" : ""}
                   style={{ color: "black" }}
                 >
-                  <table className="w-full mt-3 border-gray-200">
+                  <table className="w-full mt-3 border-gray-200 max-sm:hidden">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="p-2 text-left max-sm:text-sm">Day</th>
-                        <th className="p-2 text-left max-sm:text-sm">Item</th>
-                        <th className="p-2 text-left max-sm:text-sm">Qty</th>
-                        <th className="p-2 text-left max-sm:text-sm">
+                        <th className="p-2 text-left max-sm:text-xs">Day</th>
+                        <th className="p-2 text-left max-sm:text-xs">Item</th>
+                        <th className="p-2 text-left max-sm:text-xs">Qty</th>
+                        <th className="p-2 text-left max-sm:text-xs">
                           Total Price
                         </th>
-                        <th className="p-2 text-left max-sm:text-sm">
+                        <th className="p-2 text-left max-sm:text-xs">
                           Price Per Month
                         </th>
                       </tr>
@@ -544,7 +562,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                                 <tr className="bg-gray-200">
                                   <td
                                     colSpan={5}
-                                    className="p-3 font-semibold text-lg max-sm:text-sm"
+                                    className="p-3 font-semibold text-lg max-sm:text-xs"
                                   >
                                     {meal.dish || "No Dish Selected"} –{" "}
                                     {meal.mealType}
@@ -621,11 +639,11 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                                     ))}
                                   </>
                                 )}
-                                <tr className="bg-gray-100 font-semibold border-gray-400 max-sm:text-sm">
+                                <tr className="bg-gray-100 font-semibold border-gray-400 max-sm:text-xs">
                                   <td colSpan={4} className="p-2 underline">
                                     Total for {meal.dish}
                                   </td>
-                                  <td className="p-2 text-lg max-sm:text-sm">
+                                  <td className="p-2 text-lg max-sm:text-xs">
                                     Rs. {dishTotal.toFixed(2)}
                                     {/* {monthlyTotal > 0 && (
                                     <div className="text-xs text-emerald-600">
@@ -641,13 +659,10 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
                       {/* Grand total row */}
                       <tr className="font-semibold border-t border-gray-400">
-                        <td
-                          colSpan={4}
-                          className="p-3 text-lg max-sm:text-base"
-                        >
+                        <td colSpan={4} className="p-3 text-lg max-sm:text-sm">
                           Estimated Grand Total
                         </td>
-                        <td className="p-3 text-lg max-sm:text-base">
+                        <td className="p-3 text-lg max-sm:text-sm">
                           {(() => {
                             let total = 0;
                             Object.values(groceryData).forEach((meals) => {
@@ -673,6 +688,128 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                       </tr>
                     </tbody>
                   </table>
+
+                  <div className="flex flex-col gap-6 mt-3">
+                    {Object.keys(groceryData).flatMap((day) =>
+                      groceryData[day]
+                        .filter((meal) => meal.groceries?.length)
+                        .map((meal) => {
+                          const isRecurring = meal.isRecurring ?? true;
+
+                          const weeklyItems = meal.groceries?.filter(
+                            (i) => !i.isMonthlyStaple || !i.monthlyStapleToggle
+                          );
+                          const monthlyItems =
+                            meal.groceries?.filter(
+                              (i) => i.isMonthlyStaple && i.monthlyStapleToggle
+                            ) || [];
+
+                          const weeklyTotal =
+                            weeklyItems?.reduce(
+                              (sum, item) => sum + item.totalPrice,
+                              0
+                            ) || 0;
+                          const monthlyTotal =
+                            monthlyItems?.reduce(
+                              (sum, item) =>
+                                sum + item.totalPrice * (isRecurring ? 4 : 1),
+                              0
+                            ) || 0;
+                          const dishTotal = weeklyTotal + monthlyTotal;
+
+                          return (
+                            <div
+                              key={`${day}-${meal.id}`}
+                              className="bg-white shadow rounded-lg p-4 text-sm"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="font-semibold text-base">
+                                  {meal.dish} – {meal.mealType}
+                                </div>
+                                <div className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">
+                                  {day}
+                                </div>
+                              </div>
+
+                              {weeklyItems && weeklyItems.length > 0 && (
+                                <>
+                                  <p className="text-xs text-gray-500 mb-2">
+                                    Items to be delivered every {day}
+                                  </p>
+                                  <div className="flex flex-col gap-1">
+                                    {weeklyItems.map((item, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex justify-between"
+                                      >
+                                        <span>{item.name}</span>
+                                        <span>
+                                          {item.qty.toFixed(2)} {item.unit} –
+                                          Rs. {item.totalPrice.toFixed(2)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+
+                              {monthlyItems.length > 0 && (
+                                <>
+                                  <p className="text-xs text-gray-500 mt-2 mb-2">
+                                    Items to be delivered on 1st {day} of each
+                                    month
+                                  </p>
+                                  <div className="flex flex-col gap-1">
+                                    {monthlyItems.map((item, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex justify-between"
+                                      >
+                                        <span>{item.name}</span>
+                                        <span>
+                                          {(
+                                            item.qty * (isRecurring ? 4 : 1)
+                                          ).toFixed(2)}{" "}
+                                          {item.unit} – Rs.{" "}
+                                          {(
+                                            item.totalPrice *
+                                            (isRecurring ? 4 : 1)
+                                          ).toFixed(2)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+
+                              <div className="mt-3 border-t pt-2 font-semibold flex justify-between">
+                                <span>Total for {meal.dish}</span>
+                                <span>Rs. {dishTotal.toFixed(2)}</span>
+                              </div>
+                            </div>
+                          );
+                        })
+                    )}
+                    <div className="text-center font-bold text-sm">
+                      Estimated Grand Total: Rs.{" "}
+                      {(() => {
+                        let total = 0;
+                        Object.values(groceryData).forEach((meals) => {
+                          meals.forEach((meal) => {
+                            if (!meal.groceries) return;
+                            const isRecurring = meal.isRecurring ?? true;
+                            meal.groceries.forEach((item) => {
+                              total +=
+                                item.isMonthlyStaple && item.monthlyStapleToggle
+                                  ? item.totalPrice * (isRecurring ? 4 : 1)
+                                  : item.totalPrice;
+                            });
+                          });
+                        });
+                        return total.toFixed(2);
+                      })()}
+                    </div>
+                  </div>
                 </div>
                 {/* <div className="flex justify-center mt-4">
           <CustomButton
