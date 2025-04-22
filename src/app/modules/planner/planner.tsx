@@ -8,12 +8,13 @@ import AddIcon from "@mui/icons-material/Add";
 import CustomDropdown from "@/components/shared/custom-dropdown";
 import CloseIcon from '@mui/icons-material/Close';
 import React from "react";
-
+import EditIcon from '@mui/icons-material/Edit';
 import { dishes } from "@/app/data/dishes";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { generatePDF } from "@/app/utils/pdf-generate";
 import { useLoading } from "@/app/services/loading-service";
+import MobileMealDialog from "./dialog-add-meal";
 export default function Planner() {
 
   const theme = useTheme();
@@ -22,6 +23,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     id: number;
     dish: string;
     mealType: string;
+    groceryType: string;
     isRecurring?: boolean;
     groceries?: GroceryItem[]; // Add groceries field
   };
@@ -36,6 +38,8 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     monthlyStapleToggle?: boolean;
   };
 
+ 
+
   // type MealsByDay = {
   //   [key: string]: { id: number; dish: string; mealType: string }[];
   // };
@@ -43,6 +47,8 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
 
   const router = useRouter();
+  const [dialogOpenDay, setDialogOpenDay] = useState<null | { day: string; editingMealId?: number }>(null);
+
   const [sentEmail, setSentEmail] = useState("");
   const [emailSentError, setEmailSentError] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -50,13 +56,13 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [showGroceryPlan, setShowGroceryPlan] = useState(false);
   const [groceryData, setGroceryData] = useState<Record<string, Meal[]>>({});
   const [weeklyMeals, setWeeklyMeals] = useState<Record<string, Meal[]>>({
-    Monday: [{ id: 1, dish: "", mealType: "", groceries: [] }],
-    Tuesday: [{ id: 1, dish: "", mealType: "", groceries: [] }],
-    Wednesday: [{ id: 1, dish: "", mealType: "", groceries: [] }],
-    Thursday: [{ id: 1, dish: "", mealType: "", groceries: [] }],
-    Friday: [{ id: 1, dish: "", mealType: "", groceries: [] }],
-    Saturday: [{ id: 1, dish: "", mealType: "", groceries: [] }],
-    Sunday: [{ id: 1, dish: "", mealType: "", groceries: [] }],
+    Monday: [{ id: 1, dish: "", mealType: "", groceryType: "", groceries: [] }],
+    Tuesday: [{ id: 1, dish: "", mealType: "", groceryType: "", groceries: [] }],
+    Wednesday: [{ id: 1, dish: "", mealType: "", groceryType: "", groceries: [] }],
+    Thursday: [{ id: 1, dish: "", mealType: "", groceryType: "", groceries: [] }],
+    Friday: [{ id: 1, dish: "", mealType: "", groceryType: "", groceries: [] }],
+    Saturday: [{ id: 1, dish: "", mealType: "", groceryType: "", groceries: [] }],
+    Sunday: [{ id: 1, dish: "", mealType: "", groceryType: "", groceries: [] }],
   });
 
   const [activeStep, setActiveStep] = useState(0);
@@ -81,9 +87,15 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedDuration, setSelectedDuration] = useState("1");
 
   const mealOptions = [
-    { label: "Breakfast", value: "breakfast" },
-    { label: "Lunch", value: "lunch" },
-    { label: "Dinner", value: "dinner" },
+    { label: "Breakfast", value: "Breakfast" },
+    { label: "Lunch", value: "Lunch" },
+    { label: "Dinner", value: "Dinner" },
+  ];
+
+  const groceryTypeOptions = [
+    { label: "Raw Grocery", value: "raw" },
+    { label: "Ready To Cook", value: "rtc" },
+    { label: "Ready To Eat", value: "rte" },
   ];
 
   const steps = ["Plan", "Review" , "Confirmation"];
@@ -116,7 +128,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
       ...prev,
       [day]: [
         ...prev[day],
-        { id: prev[day].length + 1, dish: "", mealType: "" },
+        { id: prev[day].length + 1, dish: "", mealType: "", groceryType: "" },
       ],
     }));
   };
@@ -132,7 +144,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
       for (const day in updated) {
         updated[day] = updated[day].map((meal) => ({
           ...meal,
-          groceries: calculateGroceries(meal.dish, newFamilySize),
+          groceries: calculateGroceries(meal.dish, newFamilySize, false, meal.groceryType),
         }));
       }
 
@@ -163,11 +175,12 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   // };
 
   const handleDishChange = (day: string, id: number, value: string) => {
+    const familySize = Number(familyMembers) || 1;
     setWeeklyMeals((prev) => ({
       ...prev,
       [day]: prev[day].map((meal) =>
         meal.id === id
-          ? { ...meal, dish: value, groceries: calculateGroceries(value) }
+          ? { ...meal, dish: value, groceries: calculateGroceries(value, familySize, false, meal.groceryType) }
           : meal
       ),
     }));
@@ -203,17 +216,21 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const calculateGroceries = (
     dish: string,
     familySize = Number(familyMembers) || 1,
-    isRecurring = false
+    isRecurring = false,
+    groceryType: string = 'raw'
   ) => {
     const ingredients = getIngredientsForDish(dish);
     if (!ingredients.length) return [];
+
+
+    const groceryMultiplier = groceryType === 'rtc' ? 1.3 : groceryType === 'rte' ? 1.6 : 1
 
     return ingredients.map((item) => ({
       name: item.name,
       qty: item.baseQuantity * familySize, // Adjust based on family size
       unit: item.unit,
-      amountPerUnit: item.pricePerUnit,
-      totalPrice: item.pricePerUnit * familySize, // Calculate price
+      amountPerUnit: item.pricePerUnit * groceryMultiplier,
+      totalPrice: item.pricePerUnit * familySize * groceryMultiplier, // Calculate price
       isRecurring,
       isMonthlyStaple: item.isMonthlyStaple || false,
       monthlyStapleToggle: item.isMonthlyStaple || false,
@@ -228,6 +245,22 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
       ),
     }));
   };
+
+  const handleGroceryTypeChange = (day:string, id:number, value:string) => {
+    const familySize = Number(familyMembers) || 1;
+    setWeeklyMeals((prev) => ({
+      ...prev,
+      [day]: prev[day].map((meal) =>
+        meal.id === id
+          ? {
+              ...meal,
+              groceryType: value,
+              groceries: calculateGroceries(meal.dish, familySize, meal.isRecurring ?? false, value),
+            }
+          : meal
+      )
+    }))
+  }
   const handleDishDelete = (day: string, id: number) => {
     if (weeklyMeals[day].length > 1) {
       setWeeklyMeals((prev) => ({
@@ -381,82 +414,163 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 max-sm:w-100">
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4 max-sm:w-100">
               {daysOfWeek.map((day) => (
                 <Card
                   key={day}
                   className="mt-6 p-4 w-full max-sm:p-1 max-sm:mt-4"
                   sx={{
                     width: { xs: "calc(100vw - 12%)", sm: "100%" },
-                    boxShadow: { xs: "none" },
+                    boxShadow: { xs: "none", md: 1 },
                   }}
                 >
                   <div className="text-2xl max-sm:text-lg text-slate-800 mb-2">
                     {day}
                   </div>
-                  <div className="gap-3 flex flex-col">
-                    {weeklyMeals[day].map((meal, index) => (
-                      <div key={meal.id} className="flex gap-2 mt-2">
-                        {/* <CustomInput
-                          type="text"
-                          placeholder="Dish Name, e.g. Biryani"
-                          value={meal.dish}
-                          onChange={(e) =>
-                            handleDishChange(day, meal.id, e.target.value)
-                          }
-                        /> */}
 
-                        <CustomDropdown
-                          width={isMobile ? "140px" : "160px"}
-                          label="Select Dish"
-                          options={dishOptions}
-                          value={meal.dish}
-                          onChange={(e) =>
-                            handleDishChange(day, meal.id, String(e))
-                          }
-                        />
+                  {isMobile ? (
+                    <>
+                      {weeklyMeals[day].length === 1 &&
+                      !weeklyMeals[day][0].dish ? (
+                        <div className="flex flex-col items-center justify-center gap-2 mt-2">
+                          <p className="text-sm text-gray-500">
+                            No meals added yet
+                          </p>
+                          <CustomButton
+                            label="Add Dish"
+                            icon={AddIcon}
+                            className="px-2 bg-blue-600 text-white"
+                            onClick={() =>
+                              setDialogOpenDay({ day, editingMealId: 1 })
+                            }
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div className="mt-2 text-sm text-gray-700">
+                            {weeklyMeals[day].map((meal, index) => (
+                              <div
+                                key={meal.id}
+                                className="flex flex-col p-2 gap-2 mt-2 bg-white rounded-md shadow-sm"
+                              >
+                                <div>{index + 1}</div>
 
-                        <CustomDropdown
-                          label="Meal Type"
-                          width={isMobile ? "112px" : "150px"}
-                          options={mealOptions}
-                          value={meal.mealType}
-                          onChange={(e) =>
-                            handleMealTypeChange(day, meal.id, String(e))
-                          }
-                        />
+                                <div className="flex justify-between items-center">
+                                  <div className="text-xs text-gray-500">
+                                    Dish
+                                  </div>
+                                  <div className="text-xs text-gray-700 font-semibold">
+                                    {meal.dish || "—"}
+                                  </div>
+                                </div>
 
-                        {/* <button
-                          className={`flex border-1 transition border-solid rounded-xl p-1 border-gray-200 text-sm items-center px-3 gap-1
-                              hover:bg-gray-100 hover:border-gray-300
-                               cursor-pointer ${
-                                 meal.isRecurring
-                                   ? "bg-gray-200 border-gray-300"
-                                   : ""
-                               } `}
-                          onClick={() => handleRecurringToggle(day, meal.id)}
-                        >
-                          {meal.isRecurring && <CheckIcon />}
-                          Every week
-                        </button> */}
+                                <div className="flex justify-between items-center">
+                                  <div className="text-xs text-gray-500">
+                                    Meal Type
+                                  </div>
+                                  <div className="text-xs text-gray-700 font-semibold">
+                                    {meal.mealType || "—"}
+                                  </div>
+                                </div>
 
-                        {index > 0 && (
-                          <button
-                            onClick={() => handleDishDelete(day, meal.id)}
-                            className="text-red-500"
-                          >
-                            <CloseIcon />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <CustomButton
-                      label="Add Another Dish"
-                      className={isMobile ? "w-40" : "w-50"}
-                      icon={AddIcon}
-                      onClick={() => handleAddMeal(day)}
-                    />
-                  </div>
+                                <div className="flex justify-between items-center">
+                                  <div className="text-xs text-gray-500">
+                                    Grocery Type
+                                  </div>
+                                  <div className="text-xs text-gray-700 font-semibold">
+                                    { groceryTypeOptions.find((opt) => opt.value === meal.groceryType)?.label || "—"}
+                                  </div>
+                                </div>
+
+                                <div className="flex justify-end items-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      setDialogOpenDay({
+                                        day,
+                                        editingMealId: meal.id,
+                                      })
+                                    }
+                                    className="bg-white border-1 border-gray-200 w-7 flex items-center justify-center h-7 rounded-full p-2"
+                                  >
+                                    <EditIcon sx={{ fontSize: "16px" }} />
+                                  </button>
+                                  {weeklyMeals[day].length > 1 && (
+                                    <button
+                                      onClick={() =>
+                                        handleDishDelete(day, meal.id)
+                                      }
+                                      className="bg-white border border-red-200 w-7 h-7 flex items-center justify-center rounded-full p-2"
+                                    >
+                                      <CloseIcon
+                                        sx={{ fontSize: "16px", color: "red" }}
+                                      />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <CustomButton
+                            label="Add Another Dish"
+                            icon={AddIcon}
+                            className="mt-3 w-40"
+                            onClick={() => handleAddMeal(day)}
+                          />
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <div className="gap-3 flex flex-col">
+                      {weeklyMeals[day].map((meal, index) => (
+                        <div key={meal.id} className="flex gap-2 mt-2">
+                          <CustomDropdown
+                            width={isMobile ? "140px" : "160px"}
+                            label="Select Dish"
+                            options={dishOptions}
+                            value={meal.dish}
+                            onChange={(e) =>
+                              handleDishChange(day, meal.id, String(e))
+                            }
+                          />
+
+                          <CustomDropdown
+                            label="Meal Type"
+                            width={isMobile ? "112px" : "150px"}
+                            options={mealOptions}
+                            value={meal.mealType}
+                            onChange={(e) =>
+                              handleMealTypeChange(day, meal.id, String(e))
+                            }
+                          />
+                          <CustomDropdown
+                            label="Grocery Type"
+                            width={isMobile ? "112px" : "180px"}
+                            options={groceryTypeOptions}
+                            value={meal.groceryType}
+                            onChange={(e) =>
+                              handleGroceryTypeChange(day, meal.id, String(e))
+                            }
+                          />
+
+                          {index > 0 && (
+                            <button
+                              onClick={() => handleDishDelete(day, meal.id)}
+                              className="text-red-500"
+                            >
+                              <CloseIcon />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <CustomButton
+                        label="Add Another Dish"
+                        className={isMobile ? "w-40" : "w-50"}
+                        icon={AddIcon}
+                        onClick={() => handleAddMeal(day)}
+                      />
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>
@@ -492,6 +606,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                     }
                     )
                   </span>
+                  <div>{}</div>
                 </h2>
                 <div className="flex gap-3 min-sm:hidden mt-1.5">
                   <div className="bg-gray-100 py-1 px-4 rounded-2xl w-fit text-sm">
@@ -561,14 +676,35 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                               <React.Fragment key={`${day}-${meal.id}`}>
                                 <tr className="bg-gray-200">
                                   <td
-                                    colSpan={5}
+                                    colSpan={4}
                                     className="p-3 font-semibold text-lg max-sm:text-xs"
                                   >
-                                    {meal.dish || "No Dish Selected"} –{" "}
-                                    {meal.mealType}
-                                    <span className="px-3 ml-2 text-sm rounded-xl border-emerald-200 border-1 bg-emerald-50 text-emerald-600">
+                                    <span className="px-3 mr-2 text-sm rounded-xl border-emerald-200 border-1 bg-emerald-50 text-emerald-600">
                                       {day}
                                     </span>
+                                    {meal.dish || "No Dish Selected"} –{" "}
+                                    {meal.mealType}
+                                  </td>
+                                  <td>
+                                    <div
+                                      className={`px-5 w-fit py-1 rounded-full border  text-sm cursor-pointer
+                                      ${
+                                        meal.groceryType === "raw"
+                                          ? "bg-none border-gray-300"
+                                          : "border-amber-300 bg-amber-200 text-black"
+                                      }
+                                        `}
+                                    >
+                                      {groceryTypeOptions.find(
+                                        (value) =>
+                                          value.value === meal.groceryType
+                                      )?.label ?? "Raw"}
+                                      {meal.groceryType === "rtc"
+                                        ? " (+30%)"
+                                        : meal.groceryType === "rte"
+                                        ? " (+60%)"
+                                        : ""}
+                                    </div>
                                   </td>
                                 </tr>
 
@@ -645,11 +781,6 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                                   </td>
                                   <td className="p-2 text-lg max-sm:text-xs">
                                     Rs. {dishTotal.toFixed(2)}
-                                    {/* {monthlyTotal > 0 && (
-                                    <div className="text-xs text-emerald-600">
-                                      + Monthly: Rs. {monthlyTotal.toFixed(2)}
-                                    </div>
-                                  )} */}
                                   </td>
                                 </tr>
                               </React.Fragment>
@@ -689,7 +820,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                     </tbody>
                   </table>
 
-                  <div className="flex flex-col gap-6 mt-3">
+                  <div className="flex flex-col gap-6 mt-3 min-sm:hidden">
                     {Object.keys(groceryData).flatMap((day) =>
                       groceryData[day]
                         .filter((meal) => meal.groceries?.length)
@@ -722,13 +853,31 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                               key={`${day}-${meal.id}`}
                               className="bg-white shadow rounded-lg p-4 text-sm"
                             >
-                              <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center justify-between">
                                 <div className="font-semibold text-base">
                                   {meal.dish} – {meal.mealType}
                                 </div>
                                 <div className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">
                                   {day}
                                 </div>
+                              </div>
+                              <div
+                                className={`px-2 flex w-fit my-2 py-0.5 rounded-full border  text-xs cursor-pointer
+                                      ${
+                                        meal.groceryType === "raw"
+                                          ? "bg-none border-gray-300"
+                                          : "border-amber-300 bg-amber-200 text-black"
+                                      }
+                                        `}
+                              >
+                                {groceryTypeOptions.find(
+                                  (value) => value.value === meal.groceryType
+                                )?.label ?? "Raw"}
+                                {meal.groceryType === "rtc"
+                                  ? " (+30%)"
+                                  : meal.groceryType === "rte"
+                                  ? " (+60%)"
+                                  : ""}
                               </div>
 
                               {weeklyItems && weeklyItems.length > 0 && (
@@ -811,14 +960,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                     </div>
                   </div>
                 </div>
-                {/* <div className="flex justify-center mt-4">
-          <CustomButton
-            label="Submit Plan"
-            className="mt-4 w-50 text-center"
-            icon={DoneIcon}
-            onClick={handleSubmit}
-          />
-        </div> */}
+         
               </div>
             )
           )}
@@ -915,6 +1057,55 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
           Your plan has been saved!
         </MuiAlert>
       </Snackbar>
+
+      {dialogOpenDay && (
+        <MobileMealDialog
+          open={!!dialogOpenDay}
+          day={dialogOpenDay.day}
+          dishOptions={dishOptions}
+          mealOptions={mealOptions}
+          groceryTypeOptions={groceryTypeOptions}
+          onClose={() => setDialogOpenDay(null)}
+          editingMeal={
+            dialogOpenDay.editingMealId
+              ? weeklyMeals[dialogOpenDay.day].find(
+                  (m) => m.id === dialogOpenDay.editingMealId
+                )
+              : undefined
+          }
+          onAdd={(dish, mealType, groceryType) => {
+            const famSize = Number(familyMembers) || 1;
+            setWeeklyMeals((prev) => {
+              const updated = { ...prev };
+              if (dialogOpenDay.editingMealId) {
+                updated[dialogOpenDay.day] = updated[dialogOpenDay.day].map(
+                  (meal) =>
+                    meal.id === dialogOpenDay.editingMealId
+                      ? {
+                          ...meal,
+                          dish,
+                          mealType,
+                          groceryType,
+                          groceries: calculateGroceries(dish, famSize,false, groceryType ),
+                        }
+                      : meal
+                );
+              } else {
+                updated[dialogOpenDay.day].push({
+                  id: updated[dialogOpenDay.day].length + 1,
+                  dish,
+                  mealType,
+                  groceryType,
+                  groceries: calculateGroceries(dish, famSize, false, groceryType),
+                });
+              }
+              return updated;
+            });
+            setDialogOpenDay(null);
+          }}
+        />
+      )}
     </div>
   );
+
 }
