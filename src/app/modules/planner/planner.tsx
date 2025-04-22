@@ -689,21 +689,29 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                                     <div
                                       className={`px-5 w-fit py-1 rounded-full border  text-sm cursor-pointer
                                       ${
-                                        meal.groceryType === "raw"
-                                          ? "bg-none border-gray-300"
-                                          : "border-amber-300 bg-amber-200 text-black"
+                                        meal.groceryType === "rtc" || meal.groceryType === "rte"
+                                          ? "border-amber-300 bg-amber-200 text-black"
+                                          : "bg-none border-gray-300"
                                       }
                                         `}
                                     >
-                                      {groceryTypeOptions.find(
-                                        (value) =>
-                                          value.value === meal.groceryType
-                                      )?.label ?? "Raw"}
-                                      {meal.groceryType === "rtc"
-                                        ? " (+30%)"
-                                        : meal.groceryType === "rte"
-                                        ? " (+60%)"
-                                        : ""}
+                                      {(() => {
+                                        const type = meal.groceryType || "raw";
+                                        const label =
+                                          groceryTypeOptions.find(
+                                            (opt) => opt.value === type
+                                          )?.label ?? "Raw";
+                                        return (
+                                          <>
+                                            {label}
+                                            {type === "rtc"
+                                              ? " (+30%)"
+                                              : type === "rte"
+                                              ? " (+60%)"
+                                              : ""}
+                                          </>
+                                        );
+                                      })()}
                                     </div>
                                   </td>
                                 </tr>
@@ -864,20 +872,29 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                               <div
                                 className={`px-2 flex w-fit my-2 py-0.5 rounded-full border  text-xs cursor-pointer
                                       ${
-                                        meal.groceryType === "raw"
-                                          ? "bg-none border-gray-300"
-                                          : "border-amber-300 bg-amber-200 text-black"
+                                        meal.groceryType === "rtc" || meal.groceryType === "rte"
+                                          ? "border-amber-300 bg-amber-200 text-black"
+                                          : "bg-none border-gray-300"
                                       }
                                         `}
                               >
-                                {groceryTypeOptions.find(
-                                  (value) => value.value === meal.groceryType
-                                )?.label ?? "Raw"}
-                                {meal.groceryType === "rtc"
-                                  ? " (+30%)"
-                                  : meal.groceryType === "rte"
-                                  ? " (+60%)"
-                                  : ""}
+                                {(() => {
+                                  const type = meal.groceryType || "raw";
+                                  const label =
+                                    groceryTypeOptions.find(
+                                      (opt) => opt.value === type
+                                    )?.label ?? "Raw";
+                                  return (
+                                    <>
+                                      {label}
+                                      {type === "rtc"
+                                        ? " (+30%)"
+                                        : type === "rte"
+                                        ? " (+60%)"
+                                        : ""}
+                                    </>
+                                  );
+                                })()}
                               </div>
 
                               {weeklyItems && weeklyItems.length > 0 && (
