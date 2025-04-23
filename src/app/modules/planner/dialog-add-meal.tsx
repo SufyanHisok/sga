@@ -120,7 +120,7 @@ export default function MobileMealDialog({
 
         <div className="flex flex-col gap-3">
           <p className="text-sm text-gray-600">Grocery Type</p>
-          <div className="flex flex-col w-45 gap-2 max-sm:justify-center">
+          <div className="flex flex-wrap gap-2 max-sm:justify-center">
             {groceryTypeOptions.map((option) => (
               <button
                 key={option.value}

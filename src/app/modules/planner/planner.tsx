@@ -123,7 +123,14 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
 
   const handleAddMeal = (day: string) => {
-    if (weeklyMeals[day].length >= 4) return;
+    const currentMeals = weeklyMeals[day];
+    if (currentMeals.length >= 4) return;
+
+    if (isMobile) {
+      const nextId = currentMeals.length + 1;
+      setDialogOpenDay({ day, editingMealId: nextId });
+      return;
+    }
     setWeeklyMeals((prev) => ({
       ...prev,
       [day]: [
@@ -134,6 +141,14 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   };
 
   const handleFamilySizeChange = (value: string) => {
+    
+    const num = Number(value);
+
+    if (num < 1 || isNaN(num)) {
+      setFamilyMembers(""); 
+      return;
+    }
+
     setFamilyMembers(value);
 
     const newFamilySize = Number(value) || 1;
@@ -439,7 +454,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                           <CustomButton
                             label="Add Dish"
                             icon={AddIcon}
-                            className="px-2 bg-blue-600 text-white"
+                            className="pl-2 pr-2.5 bg-blue-600 text-white"
                             onClick={() =>
                               setDialogOpenDay({ day, editingMealId: 1 })
                             }
@@ -514,7 +529,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
                           <CustomButton
                             label="Add Another Dish"
                             icon={AddIcon}
-                            className="mt-3 w-40"
+                            className="mt-3 w-40 max-sm:pl-2 max-sm:pr-2.5 max-sm:w-fit"
                             onClick={() => handleAddMeal(day)}
                           />
                         </>
@@ -1095,29 +1110,34 @@ const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
             setWeeklyMeals((prev) => {
               const updated = { ...prev };
               if (dialogOpenDay.editingMealId) {
-                updated[dialogOpenDay.day] = updated[dialogOpenDay.day].map(
-                  (meal) =>
-                    meal.id === dialogOpenDay.editingMealId
-                      ? {
-                          ...meal,
-                          dish,
-                          mealType,
-                          groceryType,
-                          groceries: calculateGroceries(dish, famSize,false, groceryType ),
-                        }
-                      : meal
+                const existingIndex = updated[dialogOpenDay.day].findIndex(
+                  (meal) => meal.id === dialogOpenDay.editingMealId
                 );
-              } else {
-                updated[dialogOpenDay.day].push({
-                  id: updated[dialogOpenDay.day].length + 1,
-                  dish,
-                  mealType,
-                  groceryType,
-                  groceries: calculateGroceries(dish, famSize, false, groceryType),
-                });
+          
+                if (existingIndex !== -1) {
+                  // ✅ Update existing
+                  updated[dialogOpenDay.day][existingIndex] = {
+                    ...updated[dialogOpenDay.day][existingIndex],
+                    dish,
+                    mealType,
+                    groceryType,
+                    groceries: calculateGroceries(dish, famSize, false, groceryType),
+                  };
+                } else {
+                  // ✅ If not found, treat it as a new meal
+                  updated[dialogOpenDay.day].push({
+                    id: dialogOpenDay.editingMealId,
+                    dish,
+                    mealType,
+                    groceryType,
+                    groceries: calculateGroceries(dish, famSize, false, groceryType),
+                  });
+                }
               }
+          
               return updated;
             });
+          
             setDialogOpenDay(null);
           }}
         />
